@@ -2379,7 +2379,7 @@ class EnsemblePlayer extends BasePlayer {
   start() {
     this.running = true;
     Tone.Transport.cancel();
-    if (beatOn && beatLoop) beatLoop.start(0);
+    if (beatOn && beatLoop) beatLoop.start('@4n');
     Tone.Transport.bpm.value = currentBPM;
 
     const cellList = this.getActiveCells();
@@ -2954,7 +2954,7 @@ document.getElementById('btnBeat').addEventListener('click', async () => {
 
   beatLoop.start(0);
   Tone.Transport.bpm.value = currentBPM;
-  if (Tone.Transport.state !== 'started') Tone.Transport.start();
+  if (Tone.Transport.state !== 'started') Tone.Transport.start('+0.05');
   beatOn = true;
   document.getElementById('btnBeat').dataset.playing = 'true';
 });
