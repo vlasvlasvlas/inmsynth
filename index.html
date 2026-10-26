@@ -2607,12 +2607,9 @@ function getVisibleCells() {
 //   outro          → células 21–24
 function _groupCellsForGondola(cells) {
   return [
-    { label: 'Intro',     cells: cells.filter(c => c.group === 'intro') },
-    { label: null,        cells: cells.filter(c => c.group === 'pause-intro') },
-    { label: 'Productos', cells: cells.filter(c => c.group === 'products-d' || c.group === 'products-e') },
-    { label: null,        cells: cells.filter(c => c.group === 'pause-products') },
-    { label: 'Cierre',    cells: cells.filter(c => c.group === 'outro') },
-    { label: null,        cells: cells.filter(c => c.group === 'pause-end') }
+    { label: 'Intro',     cells: [...cells.filter(c => c.group === 'intro'),     ...cells.filter(c => c.group === 'pause-intro')] },
+    { label: 'Productos', cells: [...cells.filter(c => c.group === 'products-d' || c.group === 'products-e'), ...cells.filter(c => c.group === 'pause-products')] },
+    { label: 'Cierre',    cells: [...cells.filter(c => c.group === 'outro'),     ...cells.filter(c => c.group === 'pause-end')] }
   ];
 }
 
@@ -2629,10 +2626,7 @@ function buildGondola() {
     if (group.cells.length === 0) return;
     const row = document.createElement('div');
     row.className = 'gondola-row';
-    const labelHtml = group.label
-      ? `<div class="gondola-row-label">${group.label}</div>`
-      : `<div class="gondola-row-label" style="opacity:0;pointer-events:none">·</div>`;
-    row.innerHTML = `${labelHtml}<div class="gondola"></div>`;
+    row.innerHTML = `<div class="gondola-row-label">${group.label}</div><div class="gondola"></div>`;
     const inner = row.querySelector('.gondola');
 
     group.cells.forEach(cell => {
