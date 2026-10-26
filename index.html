@@ -310,11 +310,11 @@
       letter-spacing: .08em;
       font-weight: 500;
       color: var(--txt);
-      min-width: 55px;
+      min-width: 50px;
     }
     .slider-group input[type="range"] {
       flex: 1;
-      min-width: 60px;
+      min-width: 40px;
     }
 
     /* Slider compacto para el header */
@@ -344,9 +344,9 @@
       gap: 3px;
       background: var(--bg3);
       border: 1px solid var(--border);
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 4px;
-      min-width: 44px;
+      min-width: 38px;
       justify-content: center;
       flex-shrink: 0;
     }
@@ -367,11 +367,11 @@
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 22px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
+      gap: 14px;
     }
 
     @media (max-width: 1120px) {
@@ -389,11 +389,11 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 16px 18px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      gap: 10px;
+      justify-content: flex-start;
+      gap: 8px;
       min-width: 0;
     }
 
@@ -401,12 +401,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      gap: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      padding-bottom: 12px;
-      margin-bottom: 4px;
-      min-height: 26px;
-      flex-wrap: wrap;
+      padding-bottom: 8px;
+      margin-bottom: 2px;
+      min-height: 24px;
+      flex-wrap: nowrap;
     }
 
     .ctl-card-title {
@@ -416,20 +416,26 @@
       text-transform: uppercase;
       color: var(--dim);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .ctl-card-body {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      padding-top: 4px;
+      gap: 8px;
+      padding-top: 2px;
+      flex: 1;
+      justify-content: center;
     }
 
     .ctl-body-split {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      padding-top: 4px;
+      gap: 8px;
+      padding-top: 2px;
+      flex: 1;
+      justify-content: center;
     }
 
     .status-badge {
@@ -474,13 +480,14 @@
       background: transparent;
       border: none;
       color: var(--dim);
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 3px;
-      font-size: .7em;
+      font-size: .68em;
       letter-spacing: .04em;
       cursor: pointer;
       font-family: inherit;
       transition: color .15s, background .15s;
+      white-space: nowrap;
     }
     .preset-btn:hover {
       color: var(--txt);
@@ -1009,62 +1016,120 @@
     }
     .modal-legend th { color: var(--txt); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: .78em; }
 
-    /* ── Teclado (card dentro del controls-panel, ocupa toda la fila) ── */
-    .ctl-card-keyboard {
-      grid-column: 1 / -1;
-    }
-    .kb-header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .kb-vol-group input[type="range"] { width: 80px; }
+    /* ── Teclado (card dentro del controls-panel · 1 columna) ── */
     .kb-hold {
-      padding: 4px 12px !important;
-      font-size: .72em !important;
+      padding: 3px 8px !important;
+      font-size: .68em !important;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--dim);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all .15s ease;
+      flex-shrink: 0;
+    }
+    .kb-hold:hover {
+      color: var(--white);
+      border-color: var(--border-hi);
     }
     .kb-hold.active {
       color: var(--white);
-      border-color: var(--accent-dim);
+      border-color: var(--accent);
       background: var(--accent-soft);
+      box-shadow: 0 0 8px rgba(199, 168, 106, 0.25);
     }
-    .keyboard-info {
-      font-size: .7em;
+    .kb-hold::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--dim);
+      transition: background .15s, box-shadow .15s;
+    }
+    .kb-hold.active::before {
+      background: var(--accent);
+      box-shadow: 0 0 5px var(--accent);
+    }
+
+    .kb-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .kb-controls-row .timbre-select {
+      flex: 1 1 0;
+      min-width: 0;
+      height: 24px;
+      padding: 2px 20px 2px 7px;
+      font-size: .72em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      background-position: calc(100% - 10px) 50%, calc(100% - 6px) 50%;
+    }
+    .kb-vol-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+      font-size: .72em;
+      white-space: nowrap;
+    }
+    .kb-vol-group label {
+      min-width: auto !important;
+      font-size: .8em;
       color: var(--dim);
-      letter-spacing: .04em;
-      margin-top: 4px;
-    }
-    .keyboard-info code {
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      font-size: .95em;
-      color: var(--txt);
-      background: var(--bg3);
-      padding: 1px 5px;
-      border-radius: 3px;
       letter-spacing: .06em;
+      text-transform: uppercase;
+      font-weight: 500;
     }
+    .kb-vol-group input[type="range"] {
+      width: 42px;
+      min-width: 32px;
+      flex: 0 0 42px;
+    }
+    .kb-vol-group .val-pill {
+      min-width: 30px;
+      padding: 1px 4px;
+      font-size: .9em;
+      justify-content: center;
+    }
+
     .keyboard-keys {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
-      gap: 4px;
+      gap: 3px;
     }
     .kb-key {
-      background: var(--bg);
-      border: 1px solid var(--border-hi);
+      position: relative;
+      background: var(--bg3);
+      border: 1px solid var(--border);
       border-radius: 3px;
-      padding: 10px 4px 6px;
+      padding: 4px 1px 3px;
       cursor: pointer;
       font-family: inherit;
       color: var(--txt);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      justify-content: center;
+      gap: 1px;
       user-select: none;
-      transition: background .08s, border-color .08s, transform .05s;
+      min-height: 28px;
+      transition: background .08s, border-color .08s, transform .05s, color .08s;
     }
-    .kb-key:hover { border-color: var(--txt); }
+    .kb-key:hover {
+      border-color: var(--border-hi);
+      background: var(--bg2);
+      color: var(--white);
+    }
     .kb-key.active,
     .kb-key.pressed {
       background: var(--accent-soft);
@@ -1076,17 +1141,37 @@
       background: var(--accent-soft);
       border-color: var(--accent);
       color: var(--white);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .kb-key.held::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 4px var(--accent);
     }
     .kb-note {
-      font-size: .78em;
-      font-weight: 500;
+      font-size: .72em;
+      font-weight: 600;
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      line-height: 1.1;
+      letter-spacing: -.02em;
     }
     .kb-shortcut {
-      font-size: .54em;
+      font-size: .52em;
       color: var(--dim);
-      letter-spacing: .08em;
+      letter-spacing: .06em;
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      line-height: 1;
+    }
+    .kb-key.active .kb-shortcut,
+    .kb-key.pressed .kb-shortcut,
+    .kb-key.held .kb-shortcut {
+      color: var(--accent);
     }
 
   </style>
@@ -1230,11 +1315,14 @@
       </div>
     </div>
 
-    <!-- Card 5: Teclado · tocar sobre la obra en escala de Re mayor -->
+    <!-- Card 4: Teclado · tocar sobre la obra en escala de Re mayor -->
     <div class="ctl-card ctl-card-keyboard">
       <div class="ctl-card-header">
         <span class="ctl-card-title">Teclado · Re mayor</span>
-        <div class="kb-header-actions">
+        <button class="preset-btn kb-hold" id="kbHoldBtn" title="Mantiene las notas sonando al soltar (latch/drone)">Hold</button>
+      </div>
+      <div class="ctl-card-body">
+        <div class="kb-controls-row">
           <select class="timbre-select" id="kbTimbreSelect" title="Timbre del teclado"></select>
           <div class="slider-group kb-vol-group" title="Volumen del teclado">
             <label for="kbVolInput">Vol</label>
@@ -1244,10 +1332,7 @@
               <span class="val-unit">dB</span>
             </div>
           </div>
-          <button class="preset-btn kb-hold" id="kbHoldBtn" title="Mantiene las notas sonando al soltar. Volvés a tocar la misma tecla para apagarla. Destildar Hold para cortar todas.">Hold</button>
         </div>
-      </div>
-      <div class="ctl-card-body">
         <div class="keyboard-keys" id="keyboardKeys"></div>
       </div>
     </div>
@@ -1849,6 +1934,7 @@ let masterLimiter, masterReverb, masterVolumeNode, masterDelay;
 let leadSynth, chordSynth, bassSynth, pulseSynth;
 let voiceSynths = [];
 let voicePanners = [];
+let voicesBus = null; // bus de ganancia para las voces del ensemble (Auto/Humano)
 
 function buildVoiceSynth(timbreKey) {
   const t = TIMBRES[timbreKey] || TIMBRES.pluck;
@@ -1918,7 +2004,11 @@ async function initAudioEngine() {
   }).connect(masterReverb);
 
   // Panners estéreo → entran al delay (que a su vez va al reverb)
-  voicePanners = voiceConfig.map(c => new Tone.Panner(c.pan).connect(masterDelay));
+  // Bus de voces del ensemble (+5 dB) para compensar que el modo Canción tiene
+  // más capas simultáneas (lead + chord + bass + pulso) y queda más loud que
+  // Auto/Humano que sólo tiene 3 voces + pulso.
+  voicesBus = new Tone.Volume(5).connect(masterDelay);
+  voicePanners = voiceConfig.map(c => new Tone.Panner(c.pan).connect(voicesBus));
 
   // Construir sintetizadores con el timbre configurado
   voiceSynths = voiceConfig.map((c, i) => {
