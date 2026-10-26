@@ -1326,9 +1326,9 @@
           <select class="timbre-select" id="kbTimbreSelect" title="Timbre del teclado"></select>
           <div class="slider-group kb-vol-group" title="Volumen del teclado">
             <label for="kbVolInput">Vol</label>
-            <input type="range" id="kbVolInput" min="-30" max="6" value="-6" step="1">
+            <input type="range" id="kbVolInput" min="-30" max="6" value="-15" step="1">
             <div class="val-pill">
-              <span class="slider-val" id="kbVolVal">-6</span>
+              <span class="slider-val" id="kbVolVal">-15</span>
               <span class="val-unit">dB</span>
             </div>
           </div>
@@ -2999,7 +2999,7 @@ const KB_SHORTCUTS = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'];
 let keyboardSynth = null;
 let keyboardTimbre = 'rhodes';
 let keyboardHold = false;
-let keyboardVol = -6;   // dB · controlado por el slider propio del teclado
+let keyboardVol = -15;  // dB · controlado por el slider propio del teclado
 const kbHeldNotes = new Set();
 
 function buildKeyboard() {
