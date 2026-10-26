@@ -35,7 +35,7 @@ timbres:
   - key: pluck
     label: Pluck
     type: Synth
-    volume: -6
+    volume: -9
     oscillator:
       type: triangle
     envelope:
@@ -82,7 +82,7 @@ timbres:
   - key: clarinet
     label: Clarinete
     type: Synth
-    volume: -8
+    volume: -10
     oscillator:
       type: triangle
     envelope:
@@ -94,7 +94,7 @@ timbres:
   - key: flute
     label: Flauta
     type: Synth
-    volume: -6
+    volume: -9
     oscillator:
       type: sine
     envelope:
@@ -133,7 +133,7 @@ timbres:
   - key: marimba
     label: Marimba
     type: FMSynth
-    volume: -7
+    volume: -10
     harmonicity: 4.0
     modulationIndex: 1.6
     oscillator:
@@ -156,7 +156,7 @@ timbres:
   - key: rhodes
     label: Rhodes EP
     type: FMSynth
-    volume: -8
+    volume: -11
     harmonicity: 5
     modulationIndex: 2.5
     oscillator:
@@ -198,7 +198,7 @@ timbres:
   - key: moog
     label: Moog Lead
     type: Synth
-    volume: -11
+    volume: -14
     oscillator:
       type: sawtooth
     envelope:
@@ -224,7 +224,7 @@ timbres:
   - key: tb303
     label: TB-303 Acid
     type: Synth
-    volume: -11
+    volume: -14
     oscillator:
       type: sawtooth
     envelope:
