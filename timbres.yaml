@@ -197,37 +197,29 @@ timbres:
 
   - key: moog
     label: Moog Lead
-    type: AMSynth
-    volume: -24
-    harmonicity: 2.5
+    type: Synth
+    volume: -22
     oscillator:
-      type: sawtooth
-    envelope:
-      attack: 0.05
-      decay: 0.5
-      sustain: 0.6
-      release: 0.5
-    modulation:
       type: square
-    modulationEnvelope:
-      attack: 0.3
-      decay: 0.5
-      sustain: 0.2
-      release: 0.5
+    envelope:
+      attack: 0.02
+      decay: 0.3
+      sustain: 0.65
+      release: 0.4
 
   - key: juno
     label: Juno Pad
     type: Synth
-    volume: -19
+    volume: -21
     oscillator:
-      type: fattriangle
-      spread: 45
-      count: 4
+      type: fatsawtooth
+      spread: 20
+      count: 3
     envelope:
-      attack: 0.8
+      attack: 0.5
       decay: 0.4
-      sustain: 0.9
-      release: 3.0
+      sustain: 0.88
+      release: 2.5
 
   - key: tb303
     label: TB-303 Acid
