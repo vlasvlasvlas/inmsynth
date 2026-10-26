@@ -708,6 +708,26 @@
     .cell.active-song { border-color: var(--accent-dim) !important; background: var(--accent-soft) !important; }
     .cell.active-mixed { /* el estilo real viene inline (border-color + background) */ }
 
+    .cell.cell-pause {
+      flex: 0 0 48px;
+      min-width: 48px;
+      max-width: 48px;
+      background: transparent;
+      border-color: transparent;
+      border-style: dashed;
+      opacity: 0.45;
+      cursor: default;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 4px;
+    }
+    .cell.cell-pause:hover { border-color: var(--border); background: transparent; opacity: 0.6; }
+    .cell.cell-pause .cell-rest-symbol { font-size: 1.6em; line-height: 1; color: var(--dim); }
+    .cell.cell-pause .cell-markers { justify-content: center; }
+
     .cell-top {
       display: flex;
       justify-content: space-between;
@@ -1530,6 +1550,14 @@ const CELLS = [
     ]
   },
 
+  // ─── SILENCIO Σ1: Puente pre-catálogo (antes de los productos) ───────────
+  {
+    id: 25, name: '—', region: 'D', chord: '—', group: 'pause-intro', beats: 4, isSilence: true,
+    notes: [
+      { p: 'D5', d: '16n', t: 1.5, s: '·' }
+    ]
+  },
+
   // ─── SISTEMA 2: PRODUCTOS 1 A 8 (Re Mayor) ────────────────────────────────
   {
     id: 5, name: 'Mate', region: 'D', chord: 'D/A', group: 'products-d', beats: 2,
@@ -1654,6 +1682,17 @@ const CELLS = [
       { p: 'C#5', d: '8n',  t: 0.0, s: 'Len-' },
       { p: 'D#5', d: '4n',  t: 0.5, s: '-te-' },
       { p: 'B4',  d: '4n.', t: 1.5, s: '-jas' }
+    ]
+  },
+
+  // ─── SILENCIO Σ2: Puente post-catálogo (antes del cierre) ────────────────
+  // Calcado del patrón 7 de In C: mayoría silencio, 3 notas en E4 al centro.
+  {
+    id: 26, name: '—', region: 'E', chord: '—', group: 'pause-products', beats: 8, isSilence: true,
+    notes: [
+      { p: 'E4', d: '16n', t: 3.0, s: '·' },
+      { p: 'E4', d: '16n', t: 3.5, s: '·' },
+      { p: 'E4', d: '8n',  t: 4.0, s: '·' }
     ]
   },
 
@@ -1879,6 +1918,12 @@ timbres:
   - { key: pulse,    label: Pulse,       type: Synth,   volume: -12, oscillator: { type: pulse, width: 0.32 }, envelope: { attack: 0.005, decay: 0.18, sustain: 0.35, release: 0.3 } }
   - { key: saw,      label: Saw suave,   type: Synth,   volume: -14, oscillator: { type: fatsawtooth, spread: 14, count: 2 }, envelope: { attack: 0.03, decay: 0.22, sustain: 0.55, release: 0.5 } }
   - { key: marimba,  label: Marimba,     type: FMSynth, volume: -7,  harmonicity: 4.0, modulationIndex: 1.6, oscillator: { type: sine }, envelope: { attack: 0.001, decay: 0.45, sustain: 0.0, release: 0.4 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.35, sustain: 0.0, release: 0.3 } }
+  - { key: rhodes,   label: Rhodes EP,   type: FMSynth, volume: -8,  harmonicity: 5, modulationIndex: 2.5, oscillator: { type: sine }, envelope: { attack: 0.002, decay: 1.2, sustain: 0.4, release: 1.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.6, sustain: 0.0, release: 0.4 } }
+  - { key: dx7,      label: DX7 EPiano,  type: FMSynth, volume: -9,  harmonicity: 2, modulationIndex: 10, oscillator: { type: sine }, envelope: { attack: 0.001, decay: 0.9, sustain: 0.5, release: 1.0 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.7, sustain: 0.0, release: 0.5 } }
+  - { key: moog,     label: Moog Lead,   type: Synth,   volume: -11, oscillator: { type: sawtooth }, envelope: { attack: 0.015, decay: 0.3, sustain: 0.6, release: 0.5 } }
+  - { key: juno,     label: Juno Pad,    type: Synth,   volume: -13, oscillator: { type: fatsawtooth, spread: 30, count: 3 }, envelope: { attack: 0.6, decay: 0.5, sustain: 0.9, release: 2.0 } }
+  - { key: tb303,    label: TB-303 Acid, type: Synth,   volume: -11, oscillator: { type: sawtooth }, envelope: { attack: 0.001, decay: 0.12, sustain: 0.25, release: 0.15 } }
+  - { key: arp,      label: ARP Strings, type: Synth,   volume: -14, oscillator: { type: fatsawtooth, spread: 40, count: 3 }, envelope: { attack: 0.9, decay: 0.4, sustain: 0.9, release: 2.5 } }
 `;
 
 let TIMBRES = {}; // mapa key → { label, build(), vol }
@@ -1896,7 +1941,11 @@ function _buildTimbresFromList(list) {
     out[key] = {
       label: label || key,
       vol: volume,
-      build: () => new Tone.PolySynth(ToneClass, opts)
+      build: (maxPoly = 8) => {
+        const s = new Tone.PolySynth(ToneClass, opts);
+        s.maxPolyphony = maxPoly;
+        return s;
+      }
     };
   });
   return out;
@@ -1937,9 +1986,9 @@ let voicePanners = [];
 let voicesBus = null; // bus de ganancia para las voces del ensemble (Auto/Humano)
 let songBus = null;   // bus de ganancia para el modo Canción (lead + chord + bass)
 
-function buildVoiceSynth(timbreKey) {
+function buildVoiceSynth(timbreKey, maxPoly = 8) {
   const t = TIMBRES[timbreKey] || TIMBRES.pluck;
-  const s = t.build();
+  const s = t.build(maxPoly);
   s.volume.value = t.vol;
   return s;
 }
@@ -2015,9 +2064,9 @@ async function initAudioEngine() {
   voicesBus = new Tone.Volume(5).connect(masterDelay);
   voicePanners = voiceConfig.map(c => new Tone.Panner(c.pan).connect(voicesBus));
 
-  // Construir sintetizadores con el timbre configurado
+  // Construir sintetizadores con el timbre configurado (12 voces: margen para overlaps de release)
   voiceSynths = voiceConfig.map((c, i) => {
-    const s = buildVoiceSynth(c.timbre);
+    const s = buildVoiceSynth(c.timbre, 12);
     s.connect(voicePanners[i]);
     return s;
   });
@@ -2541,7 +2590,9 @@ function getVisibleCells() {
 function _groupCellsForGondola(cells) {
   return [
     { label: 'Intro',     cells: cells.filter(c => c.group === 'intro') },
+    { label: null,        cells: cells.filter(c => c.group === 'pause-intro') },
     { label: 'Productos', cells: cells.filter(c => c.group === 'products-d' || c.group === 'products-e') },
+    { label: null,        cells: cells.filter(c => c.group === 'pause-products') },
     { label: 'Cierre',    cells: cells.filter(c => c.group === 'outro') }
   ];
 }
@@ -2559,37 +2610,53 @@ function buildGondola() {
     if (group.cells.length === 0) return;
     const row = document.createElement('div');
     row.className = 'gondola-row';
-    row.innerHTML = `<div class="gondola-row-label">${group.label}</div><div class="gondola"></div>`;
+    const labelHtml = group.label
+      ? `<div class="gondola-row-label">${group.label}</div>`
+      : `<div class="gondola-row-label" style="opacity:0;pointer-events:none">·</div>`;
+    row.innerHTML = `${labelHtml}<div class="gondola"></div>`;
     const inner = row.querySelector('.gondola');
 
     group.cells.forEach(cell => {
       const el = document.createElement('div');
-      el.className = `cell region-${cell.region}`;
       el.id = `cell-${cell.id}`;
       el.dataset.id = cell.id;
 
-      const syllables = cell.notes
-        .map(n => (n.s || '').trim())
-        .filter(Boolean)
-        .join(' ');
+      if (cell.isSilence) {
+        el.className = `cell cell-pause region-${cell.region}`;
+        el.innerHTML = `
+          <div class="cell-rest-symbol">𝄻</div>
+          <div class="cell-markers">
+            <div class="mk mk-0" id="mk0-${cell.id}"></div>
+            <div class="mk mk-1" id="mk1-${cell.id}"></div>
+            <div class="mk mk-2" id="mk2-${cell.id}"></div>
+          </div>
+        `;
+      } else {
+        el.className = `cell region-${cell.region}`;
 
-      el.innerHTML = `
-        <div class="cell-top">
-          <span class="cell-num">${String(cell.id).padStart(2, '0')}</span>
-          <span class="cell-region-tag">${cell.region}</span>
-        </div>
-        <div class="cell-name">${cell.name}</div>
-        <div class="cell-chord">${cell.chord}</div>
-        <div class="cell-syllables" title="${syllables}">${syllables || '—'}</div>
-        <div class="cell-markers">
-          <div class="mk mk-song" id="mks-${cell.id}"></div>
-          <div class="mk mk-0" id="mk0-${cell.id}"></div>
-          <div class="mk mk-1" id="mk1-${cell.id}"></div>
-          <div class="mk mk-2" id="mk2-${cell.id}"></div>
-        </div>
-      `;
+        const syllables = cell.notes
+          .map(n => (n.s || '').trim())
+          .filter(Boolean)
+          .join(' ');
 
-      el.addEventListener('click', () => previewCell(cell.id));
+        el.innerHTML = `
+          <div class="cell-top">
+            <span class="cell-num">${String(cell.id).padStart(2, '0')}</span>
+            <span class="cell-region-tag">${cell.region}</span>
+          </div>
+          <div class="cell-name">${cell.name}</div>
+          <div class="cell-chord">${cell.chord}</div>
+          <div class="cell-syllables" title="${syllables}">${syllables || '—'}</div>
+          <div class="cell-markers">
+            <div class="mk mk-song" id="mks-${cell.id}"></div>
+            <div class="mk mk-0" id="mk0-${cell.id}"></div>
+            <div class="mk mk-1" id="mk1-${cell.id}"></div>
+            <div class="mk mk-2" id="mk2-${cell.id}"></div>
+          </div>
+        `;
+        el.addEventListener('click', () => previewCell(cell.id));
+      }
+
       inner.appendChild(el);
     });
 
