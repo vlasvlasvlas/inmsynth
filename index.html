@@ -1213,6 +1213,8 @@
     </div>
 
     <div class="header-actions">
+      <button class="btn-transport btn-transport-icon" id="btnBeat" data-playing="false" title="Beat simple On/Off" style="font-size:.7em;letter-spacing:.04em;padding:0 10px;min-width:44px;">Beat</button>
+
       <button class="btn-transport btn-transport-icon" id="btnTransport" data-playing="false" title="Iniciar / Parar (Espacio)">
         <span class="transport-icon-wrap">
           <svg class="icon-play" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><polygon points="3,2 3,14 14,8" fill="currentColor"/></svg>
@@ -2956,6 +2958,46 @@ function stopPlayback() {
 btnTransport.addEventListener('click', () => {
   if (btnTransport.dataset.playing === 'true') stopPlayback();
   else startPlayback();
+});
+
+// ── BEAT: pulso en negras (estilo guía de In C) ───────────────────────────
+let beatSynth = null;
+let beatLoop = null;
+let beatOn = false;
+
+document.getElementById('btnBeat').addEventListener('click', async () => {
+  await initAudioEngine();
+
+  if (beatOn) {
+    beatLoop?.stop();
+    beatOn = false;
+    document.getElementById('btnBeat').dataset.playing = 'false';
+    // Parar Transport solo si el player principal tampoco está corriendo
+    if (!player || !player.running) {
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+    }
+    return;
+  }
+
+  if (!beatSynth) {
+    beatSynth = new Tone.MembraneSynth({
+      pitchDecay: 0.008,
+      octaves: 3,
+      envelope: { attack: 0.001, decay: 0.18, sustain: 0.0, release: 0.08 },
+      volume: -22
+    }).connect(masterReverb);
+  }
+
+  beatLoop = new Tone.Loop(time => {
+    beatSynth.triggerAttackRelease('C2', '16n', time, 0.5);
+  }, '4n');
+
+  beatLoop.start(0);
+  Tone.Transport.bpm.value = currentBPM;
+  if (Tone.Transport.state !== 'started') Tone.Transport.start();
+  beatOn = true;
+  document.getElementById('btnBeat').dataset.playing = 'true';
 });
 
 // Selector de Modo
