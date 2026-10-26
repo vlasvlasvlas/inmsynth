@@ -1038,46 +1038,6 @@
     .modal-legend th { color: var(--txt); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: .78em; }
 
     /* ── Teclado (card dentro del controls-panel · 1 columna) ── */
-    .kb-hold {
-      padding: 3px 8px !important;
-      font-size: .68em !important;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      font-weight: 600;
-      border-radius: 3px;
-      border: 1px solid var(--border);
-      background: var(--bg3);
-      color: var(--dim);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: all .15s ease;
-      flex-shrink: 0;
-    }
-    .kb-hold:hover {
-      color: var(--white);
-      border-color: var(--border-hi);
-    }
-    .kb-hold.active {
-      color: var(--white);
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      box-shadow: 0 0 8px rgba(199, 168, 106, 0.25);
-    }
-    .kb-hold::before {
-      content: "";
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--dim);
-      transition: background .15s, box-shadow .15s;
-    }
-    .kb-hold.active::before {
-      background: var(--accent);
-      box-shadow: 0 0 5px var(--accent);
-    }
-
     .kb-controls-row {
       display: flex;
       align-items: center;
@@ -1342,7 +1302,6 @@
     <div class="ctl-card ctl-card-keyboard">
       <div class="ctl-card-header">
         <span class="ctl-card-title">Teclado · Re mayor</span>
-        <button class="preset-btn kb-hold" id="kbHoldBtn" title="Mantiene las notas sonando al soltar (latch/drone)">Hold</button>
       </div>
       <div class="ctl-card-body">
         <div class="kb-controls-row">
@@ -2420,6 +2379,7 @@ class EnsemblePlayer extends BasePlayer {
   start() {
     this.running = true;
     Tone.Transport.cancel();
+    if (beatOn && beatLoop) beatLoop.start(0);
     Tone.Transport.bpm.value = currentBPM;
 
     const cellList = this.getActiveCells();
@@ -2981,16 +2941,15 @@ document.getElementById('btnBeat').addEventListener('click', async () => {
   }
 
   if (!beatSynth) {
-    beatSynth = new Tone.MembraneSynth({
-      pitchDecay: 0.008,
-      octaves: 3,
-      envelope: { attack: 0.001, decay: 0.18, sustain: 0.0, release: 0.08 },
-      volume: -22
+    beatSynth = new Tone.Synth({
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.001, decay: 0.06, sustain: 0.0, release: 0.04 },
+      volume: -24
     }).connect(masterReverb);
   }
 
   beatLoop = new Tone.Loop(time => {
-    beatSynth.triggerAttackRelease('C2', '16n', time, 0.5);
+    beatSynth.triggerAttackRelease('C6', '32n', time, 0.45);
   }, '4n');
 
   beatLoop.start(0);
@@ -3118,7 +3077,6 @@ const KB_SCALE = ['D4', 'E4', 'F#4', 'G4', 'A4', 'B4', 'C#5', 'D5'];
 const KB_SHORTCUTS = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'];
 let keyboardSynth = null;
 let keyboardTimbre = 'rhodes';
-let keyboardHold = false;
 let keyboardVol = -20;  // dB · controlado por el slider propio del teclado
 const kbHeldNotes = new Set();
 
@@ -3153,15 +3111,6 @@ function buildKeyboard() {
     btn.addEventListener('touchend',   e => { e.preventDefault(); _stopKbNote(note); });
   });
 
-  const holdBtn = document.getElementById('kbHoldBtn');
-  if (holdBtn) {
-    holdBtn.addEventListener('click', () => {
-      keyboardHold = !keyboardHold;
-      holdBtn.classList.toggle('active', keyboardHold);
-      if (!keyboardHold) _releaseAllKb();
-    });
-  }
-
   const volInput = document.getElementById('kbVolInput');
   if (volInput) {
     volInput.addEventListener('input', e => {
@@ -3182,7 +3131,7 @@ async function _rebuildKeyboardSynth() {
     try { keyboardSynth.disconnect(); } catch (e) {}
     try { keyboardSynth.dispose(); } catch (e) {}
   }
-  keyboardSynth = buildVoiceSynth(keyboardTimbre);
+  keyboardSynth = buildVoiceSynth(keyboardTimbre, 4);
   keyboardSynth.connect(masterDelay);
   // Aplicar el volumen propio del slider del teclado (sobreescribe el default del YAML)
   keyboardSynth.volume.value = keyboardVol <= -30 ? -Infinity : keyboardVol;
@@ -3195,25 +3144,11 @@ async function _playKbNote(note) {
   if (!keyboardSynth) await _rebuildKeyboardSynth();
   const keyEl = document.querySelector(`.kb-key[data-note="${note}"]`);
 
-  if (keyboardHold) {
-    // Toggle: si ya suena, apagarla; si no, prenderla
-    if (kbHeldNotes.has(note)) {
-      try { keyboardSynth.triggerRelease(note); } catch (e) {}
-      kbHeldNotes.delete(note);
-      keyEl?.classList.remove('held');
-    } else {
-      try { keyboardSynth.triggerAttack(note); } catch (e) {}
-      kbHeldNotes.add(note);
-      keyEl?.classList.add('held');
-    }
-  } else {
-    try { keyboardSynth.triggerAttack(note); } catch (e) {}
-    keyEl?.classList.add('active');
-  }
+  try { keyboardSynth.triggerAttack(note); } catch (e) {}
+  keyEl?.classList.add('active');
 }
 
 function _stopKbNote(note) {
-  if (keyboardHold) return; // en modo hold, release es manual (reclick)
   if (keyboardSynth) {
     try { keyboardSynth.triggerRelease(note); } catch (e) {}
   }
