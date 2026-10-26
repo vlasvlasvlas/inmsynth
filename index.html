@@ -1287,9 +1287,9 @@
         </div>
         <div class="slider-group" title="Nivel de delay y subdivisión métrica sincronizada al tempo">
           <label for="delayInput">Delay</label>
-          <input type="range" id="delayInput" min="0" max="100" value="10" step="1">
+          <input type="range" id="delayInput" min="0" max="100" value="15" step="1">
           <div class="val-pill">
-            <span class="slider-val" id="delayVal">10</span>
+            <span class="slider-val" id="delayVal">15</span>
             <span class="val-unit">%</span>
           </div>
           <select class="delay-select" id="delayTimeSelect" title="División rítmica del delay sincronizado al tempo">
@@ -2023,7 +2023,7 @@ async function initAudioEngine() {
   masterDelay = new Tone.FeedbackDelay({
     delayTime: '4n',
     feedback: 0.42,
-    wet: 0.07 // 10% del slider → wet 0.07
+    wet: 0.105 // 15% del slider → wet 0.105
   }).connect(masterReverb);
 
   // Bus del modo Canción (-3 dB) para compensar que el canción con lead + chord +
