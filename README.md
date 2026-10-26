@@ -5,10 +5,11 @@
 IN M toma el jingle de Marolio y lo transforma en una obra interactiva y
 generativa inspirada en *In C* (Terry Riley, 1964).
 
-La partitura (24 células, 18 compases, modulación de Re mayor a Mi mayor)
-está transcripta nota a nota desde la partitura original (`doc/partitura.png`).
-Sobre esa base, tres músicos virtuales la recorren a su propio ritmo,
-escuchándose entre sí, y cada ejecución suena distinta.
+La partitura (24 células + 2 células de silencio, 18 compases, modulación
+de Re mayor a Mi mayor) está transcripta nota a nota desde la partitura
+original (`doc/partitura.png`). Sobre esa base, tres músicos virtuales la
+recorren a su propio ritmo, escuchándose entre sí, y cada ejecución suena
+distinta.
 
 - Demo: <https://vlasvlasvlas.github.io/inmsynth/>
 - Repo: <https://github.com/vlasvlasvlas/inmsynth>
@@ -102,9 +103,10 @@ Agrupados en 3 cards:
 - *Armonía* — acompañamiento de acordes + bajo en modo Canción.
 - *Pulso* — pulso base en corcheas.
 
-En el navbar: botón **play/stop** (ícono), slider de **Vol master**
-(al mínimo mutea totalmente), botón **?** que abre el modal con toda la
-documentación y el link a la partitura original.
+En el navbar: botón **play/stop** (ícono), botón **Beat** (pulso de
+negras tipo *In C*, golpe agudo y delicado — se puede encender/apagar
+independientemente del player), slider de **Vol master** (al mínimo mutea
+totalmente), botón **?** que abre el modal con la documentación.
 
 ---
 
@@ -116,8 +118,6 @@ mientras suena:
 
 - **Dropdown de timbre** · misma lista que los músicos.
 - **Slider de volumen propio** · independiente del master.
-- **Hold** · si está activo, cada tecla queda sonando al soltar. Volvés a
-  tocarla para apagarla. Destildar Hold corta todas.
 - Click o tocá con las teclas `A S D F G H J K` del teclado físico.
 
 ---
@@ -273,18 +273,18 @@ timbres:
 | `marimba` | Marimba | FM percusivo, decay corto |
 | `rhodes` | Rhodes EP | FM Yamaha-ish, cálido |
 | `dx7` | DX7 EPiano | FM clásico Yamaha |
-| `moog` | Moog Lead | Saw con decay orgánico |
-| `juno` | Juno Pad | Fatsawtooth 3-voice, pad detuned |
-| `tb303` | TB-303 Acid | Saw bass con decay rápido |
-| `arp` | ARP Strings | Pad lento, strings ensemble |
+| `moog` | Moog Lead | AMSynth saw + mod square — imita filter sweep Moog |
+| `juno` | Juno Pad | Fattriangle 4-voice detuned — calor chorus Juno |
+| `tb303` | TB-303 Acid | AMSynth saw, harmonicity 0.5 — sub-armónica de bajo acid |
+| `arp` | ARP Strings | FMSynth triangle — cuerdas ensemble con swell lento |
 
 **Defaults por músico:** Rhodes (M1), DX7 (M2), Marimba (M3).
 
 ### Fallback
 
 Si `timbres.yaml` no se puede cargar (abriste `index.html` con `file://`),
-IN M usa un fallback embebido con los 8 timbres originales. La consola
-del navegador avisa.
+IN M usa un fallback embebido con los 14 timbres completos (los 8 originales
++ los 6 clásicos). La consola del navegador avisa.
 
 ---
 
