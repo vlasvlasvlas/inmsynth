@@ -198,7 +198,7 @@ timbres:
   - key: moog
     label: Moog Lead
     type: Synth
-    volume: -20
+    volume: -27
     oscillator:
       type: sawtooth
     envelope:
@@ -210,7 +210,7 @@ timbres:
   - key: juno
     label: Juno Pad
     type: Synth
-    volume: -13
+    volume: -23
     oscillator:
       type: fatsawtooth
       spread: 30
@@ -224,7 +224,7 @@ timbres:
   - key: tb303
     label: TB-303 Acid
     type: Synth
-    volume: -14
+    volume: -22
     oscillator:
       type: sawtooth
     envelope:
@@ -236,7 +236,7 @@ timbres:
   - key: arp
     label: ARP Strings
     type: Synth
-    volume: -14
+    volume: -23
     oscillator:
       type: fatsawtooth
       spread: 40
