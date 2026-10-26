@@ -216,7 +216,7 @@ timbres:
       spread: 20
       count: 3
     envelope:
-      attack: 0.5
+      attack: 0.2
       decay: 0.4
       sustain: 0.88
       release: 2.5
