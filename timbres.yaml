@@ -1,0 +1,250 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# IN M · Catálogo de timbres
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Cada entrada define un sintetizador Tone.js que puede elegirse por canal
+# desde el dropdown del panel de músicos.
+#
+# Campos soportados:
+#   key           Identificador interno (debe ser único)
+#   label         Nombre visible en el dropdown
+#   type          Clase base: "Synth" | "FMSynth" | "AMSynth"
+#                 (todos se envuelven en Tone.PolySynth para permitir polifonía)
+#   volume        Nivel en dB. Negativo = más bajo. Típicamente entre -16 y -4.
+#   oscillator    Configuración del oscilador. Formas: sine, triangle, square,
+#                 sawtooth, pulse, fatsine, fattriangle, fatsawtooth
+#                 (fat* permite 'spread' y 'count' para detuning estilo analog)
+#   envelope      ADSR del amplificador: attack, decay, sustain, release
+#   modulationIndex, harmonicity, modulation, modulationEnvelope
+#                 Sólo para FMSynth / AMSynth. Definen el carácter FM/AM.
+#
+# Para agregar un nuevo timbre:
+#   1. Copiá un bloque similar al que querés usar como base.
+#   2. Cambiale `key` y `label`.
+#   3. Ajustá parámetros.
+#   4. Recargá la página — el dropdown se arma solo desde este YAML.
+#
+# Si este archivo no se puede cargar (abriste index.html con file://),
+# la app usa un fallback embebido con los 8 timbres originales.
+# ─────────────────────────────────────────────────────────────────────────────
+
+timbres:
+
+  # ─── Timbres originales ───────────────────────────────────────────────────
+
+  - key: pluck
+    label: Pluck
+    type: Synth
+    volume: -6
+    oscillator:
+      type: triangle
+    envelope:
+      attack: 0.002
+      decay: 0.35
+      sustain: 0.0
+      release: 0.4
+
+  - key: pad
+    label: Pad
+    type: Synth
+    volume: -11
+    oscillator:
+      type: fatsine
+      spread: 22
+      count: 3
+    envelope:
+      attack: 0.4
+      decay: 0.4
+      sustain: 0.85
+      release: 1.4
+
+  - key: bell
+    label: Campana
+    type: FMSynth
+    volume: -14
+    harmonicity: 3.01
+    modulationIndex: 4.2
+    oscillator:
+      type: sine
+    envelope:
+      attack: 0.001
+      decay: 1.4
+      sustain: 0.0
+      release: 1.2
+    modulation:
+      type: sine
+    modulationEnvelope:
+      attack: 0.001
+      decay: 0.4
+      sustain: 0.0
+      release: 0.4
+
+  - key: clarinet
+    label: Clarinete
+    type: Synth
+    volume: -8
+    oscillator:
+      type: triangle
+    envelope:
+      attack: 0.09
+      decay: 0.15
+      sustain: 0.75
+      release: 0.6
+
+  - key: flute
+    label: Flauta
+    type: Synth
+    volume: -6
+    oscillator:
+      type: sine
+    envelope:
+      attack: 0.14
+      decay: 0.1
+      sustain: 0.85
+      release: 0.7
+
+  - key: pulse
+    label: Pulse
+    type: Synth
+    volume: -12
+    oscillator:
+      type: pulse
+      width: 0.32
+    envelope:
+      attack: 0.005
+      decay: 0.18
+      sustain: 0.35
+      release: 0.3
+
+  - key: saw
+    label: Saw suave
+    type: Synth
+    volume: -14
+    oscillator:
+      type: fatsawtooth
+      spread: 14
+      count: 2
+    envelope:
+      attack: 0.03
+      decay: 0.22
+      sustain: 0.55
+      release: 0.5
+
+  - key: marimba
+    label: Marimba
+    type: FMSynth
+    volume: -7
+    harmonicity: 4.0
+    modulationIndex: 1.6
+    oscillator:
+      type: sine
+    envelope:
+      attack: 0.001
+      decay: 0.45
+      sustain: 0.0
+      release: 0.4
+    modulation:
+      type: sine
+    modulationEnvelope:
+      attack: 0.001
+      decay: 0.35
+      sustain: 0.0
+      release: 0.3
+
+  # ─── Clásicos de sintetizador ─────────────────────────────────────────────
+
+  - key: rhodes
+    label: Rhodes EP
+    type: FMSynth
+    volume: -8
+    harmonicity: 5
+    modulationIndex: 2.5
+    oscillator:
+      type: sine
+    envelope:
+      attack: 0.002
+      decay: 1.2
+      sustain: 0.4
+      release: 1.5
+    modulation:
+      type: sine
+    modulationEnvelope:
+      attack: 0.001
+      decay: 0.6
+      sustain: 0.0
+      release: 0.4
+
+  - key: dx7
+    label: DX7 EPiano
+    type: FMSynth
+    volume: -9
+    harmonicity: 2
+    modulationIndex: 10
+    oscillator:
+      type: sine
+    envelope:
+      attack: 0.001
+      decay: 0.9
+      sustain: 0.5
+      release: 1.0
+    modulation:
+      type: sine
+    modulationEnvelope:
+      attack: 0.001
+      decay: 0.7
+      sustain: 0.0
+      release: 0.5
+
+  - key: moog
+    label: Moog Lead
+    type: Synth
+    volume: -11
+    oscillator:
+      type: sawtooth
+    envelope:
+      attack: 0.015
+      decay: 0.3
+      sustain: 0.6
+      release: 0.5
+
+  - key: juno
+    label: Juno Pad
+    type: Synth
+    volume: -13
+    oscillator:
+      type: fatsawtooth
+      spread: 30
+      count: 3
+    envelope:
+      attack: 0.6
+      decay: 0.5
+      sustain: 0.9
+      release: 2.0
+
+  - key: tb303
+    label: TB-303 Acid
+    type: Synth
+    volume: -11
+    oscillator:
+      type: sawtooth
+    envelope:
+      attack: 0.001
+      decay: 0.12
+      sustain: 0.25
+      release: 0.15
+
+  - key: arp
+    label: ARP Strings
+    type: Synth
+    volume: -14
+    oscillator:
+      type: fatsawtooth
+      spread: 40
+      count: 3
+    envelope:
+      attack: 0.9
+      decay: 0.4
+      sustain: 0.9
+      release: 2.5
+
+  # ─── Agregá nuevos timbres debajo siguiendo el mismo formato ─────────────

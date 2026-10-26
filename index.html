@@ -1,0 +1,3056 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IN M — POSNETES · Marolio como partitura abierta</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0b0b0d;
+      --bg2:        #131317;
+      --bg3:        #1b1b20;
+      --border:     #25252c;
+      --border-hi:  #3a3a44;
+      --dim:        #6a6a74;
+      --txt:        #b8b8bf;
+      --white:      #e4e4ea;
+
+      --accent:     #c7a86a;   /* ámbar / ivory apagado · acento general */
+      --accent-soft: rgba(199, 168, 106, 0.14);
+      --accent-dim:  rgba(199, 168, 106, 0.55);
+
+      /* Colores por músico — primarios de luz saturados.
+         Se mezclan aditivamente (screen blend): rojo+verde=amarillo,
+         rojo+azul=magenta, verde+azul=cyan, los 3 = blanco. */
+      --v0:         #dc2626;   /* Músico 1 · rojo bermellón */
+      --v1:         #16a34a;   /* Músico 2 · verde selva */
+      --v2:         #4f80d4;   /* Músico 3 · azul índigo suave */
+    }
+
+    body {
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      padding: 28px 32px 48px;
+      min-height: 100vh;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    /* ── Barra superior (Navbar) ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .brand h1 {
+      font-size: 1.45em;
+      letter-spacing: .24em;
+      color: var(--white);
+      font-weight: 600;
+      line-height: 1;
+      margin: 0;
+    }
+    .brand-sub {
+      font-size: .72em;
+      color: var(--dim);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      flex-shrink: 0;
+      margin: 0 2px;
+    }
+
+    .btn-sheet {
+      background: var(--bg2);
+      color: var(--dim);
+      border: 1px solid var(--border);
+      padding: 7px 13px;
+      border-radius: 5px;
+      font-family: inherit;
+      font-size: .76em;
+      letter-spacing: .06em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .btn-sheet:hover {
+      color: var(--white);
+      border-color: var(--border-hi);
+      background: var(--bg3);
+    }
+
+    .btn-help {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .95em;
+      font-weight: 600;
+      border-radius: 5px;
+    }
+
+    /* Botón transport en el navbar */
+    .btn-transport, .btn-transport-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 5px;
+      font-family: inherit;
+      font-size: .75em;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid var(--border-hi);
+      background: var(--bg2);
+      color: var(--white);
+      transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+    }
+    .btn-transport:hover, .btn-transport-icon:hover {
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+      color: var(--white);
+    }
+    .btn-transport[data-playing="false"] .icon-stop,
+    .btn-transport-icon[data-playing="false"] .icon-stop { display: none; }
+    .btn-transport[data-playing="true"]  .icon-play,
+    .btn-transport-icon[data-playing="true"]  .icon-play { display: none; }
+
+    .btn-transport[data-playing="true"],
+    .btn-transport-icon[data-playing="true"] {
+      background: rgba(220, 38, 38, 0.16);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+    }
+    .btn-transport[data-playing="true"]:hover,
+    .btn-transport-icon[data-playing="true"]:hover {
+      background: rgba(220, 38, 38, 0.28);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+    .transport-icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .about-modal .modal-content {
+      max-width: 720px;
+    }
+    .about-body {
+      padding: 24px 28px 28px;
+      color: var(--txt);
+      font-size: .88em;
+      line-height: 1.6;
+      overflow-y: auto;
+    }
+    .about-body h3 {
+      font-size: .78em;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--dim);
+      font-weight: 500;
+      margin: 20px 0 8px;
+    }
+    .about-body h3:first-child { margin-top: 0; }
+    .about-body p { margin-bottom: 10px; }
+    .about-body ul { margin: 6px 0 14px 0; padding-left: 20px; }
+    .about-body li { margin-bottom: 4px; }
+    .about-body a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dotted var(--accent-dim);
+    }
+    .about-body a:hover { color: var(--white); border-bottom-color: var(--white); }
+    .about-body code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: .9em;
+      color: var(--white);
+      background: var(--bg3);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    /* ── Selector de Modo (Segmented Control) ── */
+    .mode-bar {
+      display: flex;
+      gap: 3px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px;
+      background: var(--bg2);
+      flex-shrink: 0;
+    }
+
+    .mode-btn {
+      padding: 6px 16px;
+      font-family: inherit;
+      font-size: .74em;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--dim);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: color .15s, background .15s, border-color .15s, box-shadow .15s;
+    }
+
+    .mode-btn:hover {
+      color: var(--txt);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .mode-btn.active {
+      color: var(--white);
+      background: var(--accent-soft);
+      border-color: var(--accent-dim);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    /* ── Sliders Custom UI ── */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      height: 20px;
+    }
+    input[type="range"]:focus {
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: var(--border-hi);
+      border-radius: 2px;
+      transition: background .15s;
+    }
+    input[type="range"]:hover::-webkit-slider-runnable-track {
+      background: #4a4a56;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg2);
+      margin-top: -4.5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      transition: transform .15s, background .15s, box-shadow .15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      background: #e2c688;
+      box-shadow: 0 0 6px var(--accent-dim);
+    }
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      background: var(--border-hi);
+      border-radius: 2px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg2);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .74em;
+      color: var(--dim);
+      white-space: nowrap;
+    }
+    .slider-group label {
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 500;
+      color: var(--txt);
+      min-width: 55px;
+    }
+    .slider-group input[type="range"] {
+      flex: 1;
+      min-width: 60px;
+    }
+
+    /* Slider compacto para el header */
+    .header-slider {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 10px;
+      gap: 8px;
+    }
+    .header-slider .vol-icon {
+      color: var(--dim);
+      flex-shrink: 0;
+      display: inline-flex;
+    }
+    .header-slider label {
+      min-width: auto;
+    }
+    .header-slider input[type="range"] {
+      width: 68px;
+      flex: none;
+    }
+
+    .val-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 4px;
+      min-width: 44px;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .val-pill .slider-val {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: .82em;
+      color: var(--white);
+      font-weight: 500;
+    }
+    .val-pill .val-unit {
+      font-size: .68em;
+      color: var(--dim);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
+    /* ── Panel de controles — Grid Modular Responsive ── */
+    .controls-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 22px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 1120px) {
+      .controls-panel {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 620px) {
+      .controls-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ctl-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .ctl-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding-bottom: 12px;
+      margin-bottom: 4px;
+      min-height: 26px;
+      flex-wrap: wrap;
+    }
+
+    .ctl-card-title {
+      font-size: .68em;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--dim);
+      white-space: nowrap;
+    }
+
+    .ctl-card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    .ctl-body-split {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-top: 4px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: .72em;
+      color: var(--dim);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: .04em;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .status-badge::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--dim);
+      margin-right: 6px;
+      flex-shrink: 0;
+      transition: background .2s, box-shadow .2s;
+    }
+    body:has(#btnTransport[data-playing="true"]) .status-badge::before {
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    .pacing-presets {
+      display: inline-flex;
+      background: var(--bg3);
+      padding: 2px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .preset-btn {
+      background: transparent;
+      border: none;
+      color: var(--dim);
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: .7em;
+      letter-spacing: .04em;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color .15s, background .15s;
+    }
+    .preset-btn:hover {
+      color: var(--txt);
+    }
+    .preset-btn.active {
+      color: var(--white);
+      background: var(--accent-soft);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      font-weight: 500;
+    }
+
+    .delay-select {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--txt);
+      padding: 3px 18px 3px 6px;
+      border-radius: 4px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: .74em;
+      cursor: pointer;
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%),
+                        linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+      background-position: calc(100% - 9px) 50%, calc(100% - 5px) 50%;
+      background-size: 4px 4px, 4px 4px;
+      background-repeat: no-repeat;
+      min-width: 48px;
+      flex-shrink: 0;
+    }
+    .delay-select:hover {
+      border-color: var(--border-hi);
+      color: var(--white);
+    }
+    .delay-select:focus {
+      outline: none;
+      border-color: var(--accent-dim);
+    }
+
+    /* ── Toggles Custom UI ── */
+    .toggle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+    }
+    .toggle-control, .toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      font-size: .74em;
+      color: var(--txt);
+      letter-spacing: .04em;
+      transition: color .15s;
+      white-space: nowrap;
+    }
+    .toggle-control:hover, .toggle-label:hover {
+      color: var(--white);
+    }
+    .toggle-control input[type="checkbox"],
+    .toggle-label input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 28px;
+      height: 16px;
+      background: var(--bg3);
+      border: 1px solid var(--border-hi);
+      border-radius: 9px;
+      transition: background .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+    .toggle-switch::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 10px;
+      height: 10px;
+      background: var(--dim);
+      border-radius: 50%;
+      transition: transform .2s, background .2s;
+    }
+    .toggle-control input[type="checkbox"]:checked + .toggle-switch,
+    .toggle-label input[type="checkbox"]:checked + .toggle-switch {
+      background: var(--accent-soft);
+      border-color: var(--accent-dim);
+    }
+    .toggle-control input[type="checkbox"]:checked + .toggle-switch::after,
+    .toggle-label input[type="checkbox"]:checked + .toggle-switch::after {
+      transform: translateX(12px);
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent-dim);
+    }
+    .toggle-control input[type="checkbox"]:focus-visible + .toggle-switch,
+    .toggle-label input[type="checkbox"]:focus-visible + .toggle-switch {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ── HUD de posición ── */
+    .hud-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: .72em;
+      color: var(--dim);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: .04em;
+      margin-bottom: 18px;
+    }
+
+    .chord-pill, .region-pill {
+      color: var(--txt);
+      padding: 3px 10px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      font-size: .95em;
+    }
+    .region-pill { color: var(--dim); }
+
+    /* ── Góndola Partitura ── */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      font-size: .7em;
+      letter-spacing: .22em;
+      color: var(--dim);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 4px;
+    }
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      padding: 4px 12px;
+      border-radius: 3px;
+      font-size: .72em;
+      letter-spacing: .06em;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .filter-btn:hover { color: var(--txt); border-color: var(--border-hi); }
+    .filter-btn.active { color: var(--white); border-color: var(--accent-dim); background: var(--accent-soft); }
+
+    .gondola-wrapper {
+      position: relative;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .gondola-row {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .gondola-row-label {
+      font-size: .62em;
+      color: var(--dim);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      min-width: 80px;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+
+    .gondola {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      flex: 1;
+      padding: 0;
+    }
+
+    .cell {
+      flex: 1 1 92px;
+      min-width: 90px;
+      max-width: 140px;
+      padding: 9px 10px 8px;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      border-radius: 4px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      position: relative;
+      user-select: none;
+    }
+    .cell:hover {
+      border-color: var(--border-hi);
+      background: var(--bg3);
+    }
+
+    /* Estados activos — modo canción (color plano acento).
+       Para los modos Auto/Humano, el color se setea inline en runtime
+       mezclando los RGB de los músicos presentes en la célula. */
+    .cell.active-song { border-color: var(--accent-dim) !important; background: var(--accent-soft) !important; }
+    .cell.active-mixed { /* el estilo real viene inline (border-color + background) */ }
+
+    .cell-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .62em;
+      color: var(--dim);
+      margin-bottom: 4px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: .06em;
+    }
+    .cell-num { color: var(--txt); }
+    .cell-region-tag { color: var(--dim); }
+
+    .cell-name {
+      font-size: .78em;
+      color: var(--white);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 1px 0 3px;
+    }
+
+    .cell-chord {
+      font-size: .62em;
+      color: var(--dim);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      margin-bottom: 4px;
+      letter-spacing: .04em;
+    }
+
+    .cell-syllables {
+      font-size: .68em;
+      color: var(--txt);
+      font-style: italic;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .01em;
+    }
+
+    .cell-markers {
+      display: flex;
+      justify-content: flex-start;
+      gap: 3px;
+      margin-top: 6px;
+      min-height: 6px;
+    }
+    .mk {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      visibility: hidden;
+    }
+    .mk.on { visibility: visible; }
+    .mk-song { background: var(--accent); }
+    .mk-0 { background: var(--v0); }
+    .mk-1 { background: var(--v1); }
+    .mk-2 { background: var(--v2); }
+
+    /* ── Panel de Intérpretes ── */
+
+    .interp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .interp-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--v-color, var(--border));
+      border-radius: 5px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      transition: border-color .15s, background .15s;
+    }
+    .interp-card.playing .interp-name { color: var(--v-color, var(--white)); }
+
+    .interp-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .interp-id-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .interp-name {
+      font-size: .78em;
+      font-weight: 500;
+      color: var(--white);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .interp-position {
+      font-size: .68em;
+      color: var(--dim);
+      letter-spacing: .08em;
+    }
+
+    .timbre-select {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--txt);
+      padding: 5px 8px;
+      padding-right: 24px;
+      border-radius: 3px;
+      font-family: inherit;
+      font-size: .72em;
+      cursor: pointer;
+      letter-spacing: .04em;
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%),
+                        linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+      background-position: calc(100% - 12px) 50%, calc(100% - 8px) 50%;
+      background-size: 4px 4px, 4px 4px;
+      background-repeat: no-repeat;
+    }
+    .timbre-select:hover { border-color: var(--border-hi); color: var(--white); }
+    .timbre-select:focus { outline: none; border-color: var(--accent-dim); }
+
+    .interp-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 8px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .interp-cell-name {
+      font-size: .98em;
+      font-weight: 500;
+      color: var(--white);
+    }
+    .interp-cell-chord {
+      font-size: .72em;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      color: var(--dim);
+    }
+
+    .rep-bar-wrap {
+      width: 100%;
+      height: 2px;
+      background: var(--bg);
+      overflow: hidden;
+      margin: 1px 0 2px;
+    }
+    .rep-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      opacity: .7;
+      transition: width 0.3s ease;
+    }
+
+    .interp-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .7em;
+      color: var(--dim);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: .04em;
+    }
+
+    .listening-badge {
+      font-size: 1em;
+      color: var(--dim);
+    }
+    .listening-badge.rest { color: var(--accent); }
+    .listening-badge.hold { color: var(--accent); }
+    .listening-badge.resonance { color: var(--txt); }
+    .listening-badge.wait { color: var(--txt); }
+
+    .interp-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    /* Todos los botones del músico comparten base para que se lean como un set */
+    .btn-row {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      padding: 7px 6px;
+      border-radius: 3px;
+      font-size: .7em;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      line-height: 1.1;
+      min-width: 0;
+    }
+    .btn-row:hover:not(:disabled) { color: var(--txt); border-color: var(--border-hi); }
+    .btn-row:disabled { opacity: .3; cursor: not-allowed; }
+    .btn-row .btn-key {
+      font-size: .78em;
+      color: var(--dim);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .btn-row.active {
+      color: var(--white);
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+
+    /* Pequeña ayuda contextual bajo los botones */
+    .interp-help {
+      font-size: .66em;
+      color: var(--dim);
+      letter-spacing: .02em;
+      line-height: 1.35;
+      padding-top: 2px;
+    }
+    .interp-help b { color: var(--txt); font-weight: 500; }
+
+    /* ── Modal Partitura ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-content {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      max-width: 95vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-size: .82em; color: var(--white); letter-spacing: .14em; text-transform: uppercase; }
+    .btn-close {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      font-size: .8em;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      letter-spacing: .08em;
+    }
+    .btn-close:hover { color: var(--white); border-color: var(--border-hi); }
+    .modal-body {
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+    .modal-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .modal-legend {
+      width: 100%;
+      font-size: .8em;
+      color: var(--dim);
+    }
+    .modal-legend table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    .modal-legend th, .modal-legend td {
+      padding: 6px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: .92em;
+    }
+    .modal-legend th { color: var(--txt); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: .78em; }
+
+    /* ── Teclado (card dentro del controls-panel, ocupa toda la fila) ── */
+    .ctl-card-keyboard {
+      grid-column: 1 / -1;
+    }
+    .kb-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .kb-vol-group input[type="range"] { width: 80px; }
+    .kb-hold {
+      padding: 4px 12px !important;
+      font-size: .72em !important;
+    }
+    .kb-hold.active {
+      color: var(--white);
+      border-color: var(--accent-dim);
+      background: var(--accent-soft);
+    }
+    .keyboard-info {
+      font-size: .7em;
+      color: var(--dim);
+      letter-spacing: .04em;
+      margin-top: 4px;
+    }
+    .keyboard-info code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: .95em;
+      color: var(--txt);
+      background: var(--bg3);
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: .06em;
+    }
+    .keyboard-keys {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+    }
+    .kb-key {
+      background: var(--bg);
+      border: 1px solid var(--border-hi);
+      border-radius: 3px;
+      padding: 10px 4px 6px;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--txt);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      user-select: none;
+      transition: background .08s, border-color .08s, transform .05s;
+    }
+    .kb-key:hover { border-color: var(--txt); }
+    .kb-key.active,
+    .kb-key.pressed {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--white);
+      transform: translateY(1px);
+    }
+    .kb-key.held {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--white);
+    }
+    .kb-note {
+      font-size: .78em;
+      font-weight: 500;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    .kb-shortcut {
+      font-size: .54em;
+      color: var(--dim);
+      letter-spacing: .08em;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Barra superior (Navbar) -->
+  <header>
+    <div class="brand-wrap">
+      <div class="brand"><h1>IN M</h1></div>
+      <div class="brand-sub">Marolio · In C</div>
+    </div>
+
+    <div class="mode-bar">
+      <button class="mode-btn active" data-mode="song" title="18 compases con métrica exacta de la partitura">Canción</button>
+      <button class="mode-btn" data-mode="auto" title="Tres intérpretes autónomos · algoritmo In C de Terry Riley">Auto</button>
+      <button class="mode-btn" data-mode="human" title="Dirección manual en vivo con teclas 1 / 2 / 3">Humano</button>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-transport btn-transport-icon" id="btnTransport" data-playing="false" title="Iniciar / Parar (Espacio)">
+        <span class="transport-icon-wrap">
+          <svg class="icon-play" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><polygon points="3,2 3,14 14,8" fill="currentColor"/></svg>
+          <svg class="icon-stop" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="3" y="3" width="10" height="10" fill="currentColor"/></svg>
+        </span>
+      </button>
+
+      <div class="slider-group header-slider" title="Volumen Master">
+        <svg class="vol-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <label for="volInput">Vol</label>
+        <input type="range" id="volInput" min="-30" max="6" value="-3" step="1">
+        <div class="val-pill">
+          <span class="slider-val" id="volVal">-3</span>
+          <span class="val-unit">dB</span>
+        </div>
+      </div>
+
+      <div class="header-sep"></div>
+
+      <button class="btn-sheet btn-help" id="btnOpenAbout" title="¿Qué es esto? · Explicación de la obra y atajos">?</button>
+    </div>
+  </header>
+
+  <!-- Panel de controles · Grid Modular de 4 Bloques -->
+  <div class="controls-panel">
+
+    <!-- Card 1+2 unificada: Tiempo & Estado -->
+    <div class="ctl-card ctl-card-clock">
+      <div class="ctl-card-header">
+        <span class="ctl-card-title">Tiempo &amp; Estado</span>
+        <div class="pacing-presets" title="Preajustes de duración y contemplación">
+          <button class="preset-btn" data-reps="16" title="16 reps · ~15 min · Ambient meditativo">Meditativo</button>
+          <button class="preset-btn active" data-reps="8" title="8 reps · ~6 min · Estilo In C clásico">Clásico</button>
+          <button class="preset-btn" data-reps="4" title="4 reps · ~2.5 min · Rápido y ágil">Ágil</button>
+        </div>
+      </div>
+      <div class="ctl-card-body ctl-body-split">
+        <div class="slider-group" title="Tempo en pulsos por minuto (BPM)">
+          <label for="bpmInput">Tempo</label>
+          <input type="range" id="bpmInput" min="70" max="160" value="120" step="1">
+          <div class="val-pill">
+            <span class="slider-val" id="bpmVal">120</span>
+            <span class="val-unit">BPM</span>
+          </div>
+        </div>
+        <div class="slider-group" title="Mínimo de repeticiones de cada célula antes de considerar avanzar">
+          <label for="patienceInput">Reps mín</label>
+          <input type="range" id="patienceInput" min="4" max="24" value="8" step="1">
+          <div class="val-pill">
+            <span class="slider-val" id="patienceVal">8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Espacio & Efectos -->
+    <div class="ctl-card ctl-card-fx">
+      <div class="ctl-card-header">
+        <span class="ctl-card-title">Espacio &amp; FX</span>
+      </div>
+      <div class="ctl-card-body ctl-body-split">
+        <div class="slider-group" title="Nivel de reverberación espacial (0 = apagado)">
+          <label for="reverbInput">Reverb</label>
+          <input type="range" id="reverbInput" min="0" max="100" value="25" step="1">
+          <div class="val-pill">
+            <span class="slider-val" id="reverbVal">25</span>
+            <span class="val-unit">%</span>
+          </div>
+        </div>
+        <div class="slider-group" title="Nivel de delay y subdivisión métrica sincronizada al tempo">
+          <label for="delayInput">Delay</label>
+          <input type="range" id="delayInput" min="0" max="100" value="10" step="1">
+          <div class="val-pill">
+            <span class="slider-val" id="delayVal">10</span>
+            <span class="val-unit">%</span>
+          </div>
+          <select class="delay-select" id="delayTimeSelect" title="División rítmica del delay sincronizado al tempo">
+            <option value="2n">½</option>
+            <option value="4n.">¼·</option>
+            <option value="4n" selected>¼</option>
+            <option value="8n.">⅛·</option>
+            <option value="8n">⅛</option>
+            <option value="16n">1/16</option>
+            <option value="8t">1/8T</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Capas Sonoras & Toggles -->
+    <div class="ctl-card ctl-card-toggles">
+      <div class="ctl-card-header">
+        <span class="ctl-card-title">Capas Sonoras</span>
+      </div>
+      <div class="ctl-card-body">
+        <div class="toggle-grid">
+          <label class="toggle-control" title="Variaciones dinámicas, de octava y lead-in sobre las células">
+            <input type="checkbox" id="chkVariation" checked>
+            <span class="toggle-switch"></span>
+            <span class="toggle-name">Variación</span>
+          </label>
+          <label class="toggle-control" title="Pausas de silencio de 2–4 compases para escuchar al ensamble">
+            <input type="checkbox" id="chkBreaths" checked>
+            <span class="toggle-switch"></span>
+            <span class="toggle-name">Respiración</span>
+          </label>
+          <label class="toggle-control" title="Acompañamiento armónico (acordes y bajo sintetizado)">
+            <input type="checkbox" id="chkHarmony" checked>
+            <span class="toggle-switch"></span>
+            <span class="toggle-name">Armonía</span>
+          </label>
+          <label class="toggle-control" title="Pulso en corcheas de In C">
+            <input type="checkbox" id="chkPulse" checked>
+            <span class="toggle-switch"></span>
+            <span class="toggle-name">Pulso</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5: Teclado · tocar sobre la obra en escala de Re mayor -->
+    <div class="ctl-card ctl-card-keyboard">
+      <div class="ctl-card-header">
+        <span class="ctl-card-title">Teclado · Re mayor</span>
+        <div class="kb-header-actions">
+          <select class="timbre-select" id="kbTimbreSelect" title="Timbre del teclado"></select>
+          <div class="slider-group kb-vol-group" title="Volumen del teclado">
+            <label for="kbVolInput">Vol</label>
+            <input type="range" id="kbVolInput" min="-30" max="6" value="-6" step="1">
+            <div class="val-pill">
+              <span class="slider-val" id="kbVolVal">-6</span>
+              <span class="val-unit">dB</span>
+            </div>
+          </div>
+          <button class="preset-btn kb-hold" id="kbHoldBtn" title="Mantiene las notas sonando al soltar. Volvés a tocar la misma tecla para apagarla. Destildar Hold para cortar todas.">Hold</button>
+        </div>
+      </div>
+      <div class="ctl-card-body">
+        <div class="keyboard-keys" id="keyboardKeys"></div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <span id="cellCountLabel" hidden>24</span>
+
+  <div class="gondola-wrapper" id="gondolaWrapper"></div>
+
+  <!-- Panel de Intérpretes (sólo en modos Auto / Humano) -->
+  <div class="section-header" id="interpSectionHeader">
+    <div class="section-title" id="interpHeaderTitle">Intérpretes</div>
+  </div>
+  <div class="interp-grid" id="interpGrid"></div>
+
+
+  <!-- Modal de Partitura Original -->
+  <div class="modal-overlay" id="sheetModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Partitura original · Marolio</div>
+        <button class="btn-close" id="btnCloseSheet">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <img src="doc/partitura.png" alt="Partitura original de Marolio">
+        <div class="modal-legend">
+          <strong>Estructura formal de la partitura original:</strong>
+          <table>
+            <thead>
+              <tr>
+                <th>Sistema</th>
+                <th>Compases</th>
+                <th>Tonalidad</th>
+                <th>Contenido / Células</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Sistema 1</td>
+                <td>c. 1 al 5</td>
+                <td>Re Mayor (2#)</td>
+                <td>Intro: «Marolio le da sabor a tu vida... desde el comienzo del día» (Células 01 a 04)</td>
+              </tr>
+              <tr>
+                <td>Sistema 2</td>
+                <td>c. 6 al 9</td>
+                <td>Re Mayor (2#)</td>
+                <td>Productos 1 a 8: Mate, Café, Harina, Palmitos, Yerba, Mermelada, Cacao, Picadillo (Células 05 a 12)</td>
+              </tr>
+              <tr>
+                <td>Sistema 3</td>
+                <td>c. 10 al 13</td>
+                <td>Mi Mayor (4# - Modulación)</td>
+                <td>Productos 9 a 16: Paté, Caballa, Arroz, Arvejas, Sardinas, Atún, Choclo, Lentejas (Células 13 a 20)</td>
+              </tr>
+              <tr>
+                <td>Sistema 4</td>
+                <td>c. 14 al 18</td>
+                <td>Mi Mayor (4#)</td>
+                <td>Cierre: «Marolio le da sabor a tu vida... desde el comienzo del día» (Células 21 a 24)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Acerca de -->
+  <div class="modal-overlay about-modal" id="aboutModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Acerca de IN M</div>
+        <button class="btn-close" id="btnCloseAbout">Cerrar</button>
+      </div>
+      <div class="about-body">
+        <h3>¿Qué es esto?</h3>
+        <p>
+          <b>IN M</b> es una lectura abierta del jingle de Marolio al estilo de <i>In C</i> (Terry Riley, 1964).
+          La melodía original está transcripta nota a nota desde la partitura (18 compases, 24 células).
+          Esas células son los módulos que después tres músicos virtuales recorren a su propio ritmo,
+          escuchándose entre sí.
+        </p>
+
+        <h3>Modos</h3>
+        <ul>
+          <li><b>Canción</b> · toca los 18 compases tal cual, con armonía y bajo. La partitura íntegra.</li>
+          <li><b>Auto</b> · tres intérpretes recorren las 24 células siguiendo un algoritmo tipo <i>In C</i>:
+          cada uno con su propia paciencia, su phasing rítmico, pausas y variaciones.</li>
+          <li><b>Humano</b> · vos dirigís. Las teclas <code>1</code> / <code>2</code> / <code>3</code>
+          (o los botones Avanzar) le dicen a cada músico que pase a la siguiente célula.</li>
+        </ul>
+
+        <h3>Controles por músico</h3>
+        <ul>
+          <li><b>Timbre</b> · elegís el sonido del canal entre 8 opciones (pluck, pad, campana, clarinete,
+          flauta, pulse, saw suave, marimba).</li>
+          <li><b>Auto / Manual</b> · quién decide los avances. En Auto el algoritmo. En Manual sólo vos.</li>
+          <li><b>Pausar</b> · congela el avance: el músico sigue tocando el mismo patrón en loop
+          hasta que lo destildes. Útil para generar un ostinato o pedal mientras los otros rotan.</li>
+          <li><b>Respirar</b> · lo calla 2 compases y vuelve solo.</li>
+          <li><b>Avanzar</b> · encola el salto a la siguiente célula. Se ejecuta recién al cerrar
+          el ciclo actual, para no cortar la frase a la mitad. Mientras tanto el botón muestra
+          "Al cerrar…".</li>
+        </ul>
+
+        <h3>Controles globales</h3>
+        <ul>
+          <li><b>Tempo</b> · BPM del transport.</li>
+          <li><b>Escucha</b> · cuántas repeticiones mínimas sostiene cada músico una célula antes de pensar en avanzar. Más alto = más meditativo.</li>
+          <li><b>Variación</b> · activa swells de dinámica, octavas ocasionales y dropouts raros sobre las células.</li>
+          <li><b>Respiración</b> · habilita las pausas automáticas de 2-4 compases.</li>
+          <li><b>Armonía</b> · acompañamiento (acordes + bajo) en modo Canción.</li>
+          <li><b>Pulso</b> · pulso base en corcheas.</li>
+        </ul>
+
+        <h3>Atajos de teclado</h3>
+        <ul>
+          <li><code>Espacio</code> · iniciar / detener</li>
+          <li><code>Esc</code> · parar</li>
+          <li><code>1</code> / <code>2</code> / <code>3</code> · avanzar músico 1, 2, 3</li>
+          <li>Click en una célula de la góndola · preescucha</li>
+        </ul>
+
+        <h3>Partitura y código</h3>
+        <p>
+          <a href="#" id="btnOpenSheet">Abrir partitura original</a> · imagen escaneada con la transcripción
+          nota a nota, acordes y estructura por sistemas.
+        </p>
+        <p>
+          Repositorio: <a href="https://github.com/vlasvlasvlas/inmsynth" target="_blank" rel="noopener">github.com/vlasvlasvlas/inmsynth</a>
+        </p>
+        <p>
+          Toda la transcripción (alturas, ritmos, armonía, sílabas) está auditada desde
+          <code>doc/partitura.png</code>. El algoritmo del ensamble sigue las reglas de escucha mutua
+          que propuso Riley, con dispersión máxima aflojada a 4 células, phasing rítmico permanente por voz
+          y pausas condicionadas por fatiga, unísono prolongado o respiración de grupo.
+        </p>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════════
+// 1. DEFINICIÓN PRECISA DE CÉLULAS (24 MÓDULOS DE LA PARTITURA)
+// Transcripción nota por nota de doc/partitura.png
+// ════════════════════════════════════════════════════════════════════════════════
+
+const CELLS = [
+  // ─── SISTEMA 1: INTRO (Re Mayor) ──────────────────────────────────────────
+  {
+    id: 1, name: 'Marolio', region: 'D', chord: 'D', group: 'intro', beats: 4,
+    notes: [
+      { p: 'D4',  d: '8n',  t: 0.0, s: 'Ma-' },
+      { p: 'F#4', d: '4n',  t: 0.5, s: 'ro-' },
+      { p: 'F#4', d: '4n.', t: 1.5, s: '-lio' }
+    ]
+  },
+  {
+    id: 2, name: 'Sabor a tu vida', region: 'D', chord: 'G → A', group: 'intro', beats: 4,
+    notes: [
+      { p: 'D4',  d: '8n', t: 0.0, s: 'le' },
+      { p: 'F#4', d: '8n', t: 0.5, s: 'da' },
+      { p: 'A4',  d: '8n', t: 1.0, s: 'sa-' },
+      { p: 'B4',  d: '8n', t: 1.5, s: '-bor' },
+      { p: 'A4',  d: '8n', t: 2.0, s: 'a' },
+      { p: 'G4',  d: '8n', t: 2.5, s: 'tu' },
+      { p: 'F#4', d: '4n', t: 3.0, s: 'vi-' },
+      { p: 'D4',  d: '4n', t: 3.5, s: '-da' }
+    ]
+  },
+  {
+    id: 3, name: 'Marolio está', region: 'D', chord: 'D/A → Bm', group: 'intro', beats: 4,
+    notes: [
+      { p: 'D4', d: '8n', t: 0.0, s: 'Ma-' },
+      { p: 'D5', d: '8n', t: 0.5, s: 'ro-' },
+      { p: 'D5', d: '8n', t: 1.0, s: '-lio' },
+      { p: 'D5', d: '8n', t: 1.5, s: 'es-' },
+      { p: 'D5', d: '4n', t: 2.0, s: '-tá' }
+    ]
+  },
+  {
+    id: 4, name: 'Comienzo del día', region: 'D', chord: 'C/G → A → D', group: 'intro', beats: 8,
+    notes: [
+      { p: 'B4',  d: '8n', t: 0.0, s: 'des-' },
+      { p: 'D5',  d: '8n', t: 0.5, s: '-de\'l' },
+      { p: 'E5',  d: '8n', t: 1.0, s: 'co-' },
+      { p: 'G5',  d: '8n', t: 1.5, s: '-mien-' },
+      { p: 'E5',  d: '8n', t: 2.0, s: '-zo' },
+      { p: 'D5',  d: '8n', t: 2.5, s: 'del' },
+      { p: 'C#5', d: '4n', t: 3.0, s: 'dí-' },
+      { p: 'D5',  d: '1m', t: 4.0, s: '-a' }
+    ]
+  },
+
+  // ─── SISTEMA 2: PRODUCTOS 1 A 8 (Re Mayor) ────────────────────────────────
+  {
+    id: 5, name: 'Mate', region: 'D', chord: 'D/A', group: 'products-d', beats: 2,
+    notes: [
+      { p: 'D5', d: '8n', t: 0.0, s: 'Ma-' },
+      { p: 'D5', d: '8n', t: 0.5, s: '-te,' }
+    ]
+  },
+  {
+    id: 6, name: 'Café', region: 'D', chord: 'A', group: 'products-d', beats: 2,
+    notes: [
+      { p: 'D5',  d: '8n', t: 0.0, s: 'Ca-' },
+      { p: 'C#5', d: '2n', t: 0.5, s: '-fé' }
+    ]
+  },
+  {
+    id: 7, name: 'Harina', region: 'D', chord: 'G', group: 'products-d', beats: 2,
+    notes: [
+      { p: 'D5', d: '8n', t: 0.0, s: 'Ha-' },
+      { p: 'B4', d: '8n', t: 0.5, s: '-ri-' },
+      { p: 'B4', d: '8n', t: 1.0, s: '-na y' }
+    ]
+  },
+  {
+    id: 8, name: 'Palmitos', region: 'D', chord: 'A', group: 'products-d', beats: 4,
+    notes: [
+      { p: 'B4',  d: '8n',  t: 0.0, s: 'Pal-' },
+      { p: 'C#5', d: '4n',  t: 0.5, s: '-mi-' },
+      { p: 'A4',  d: '4n.', t: 1.5, s: '-tos' }
+    ]
+  },
+  {
+    id: 9, name: 'Yerba', region: 'D', chord: 'D/A', group: 'products-d', beats: 2,
+    notes: [
+      { p: 'D5', d: '8n', t: 0.0, s: 'Yer-' },
+      { p: 'D5', d: '8n', t: 0.5, s: '-ba,' }
+    ]
+  },
+  {
+    id: 10, name: 'Mermelada', region: 'D', chord: 'A', group: 'products-d', beats: 4,
+    notes: [
+      { p: 'D5',  d: '8n', t: 0.0, s: 'mer-' },
+      { p: 'C#5', d: '8n', t: 0.5, s: '-me-' },
+      { p: 'B4',  d: '8n', t: 1.0, s: '-la-' },
+      { p: 'B4',  d: '4n', t: 1.5, s: '-das' }
+    ]
+  },
+  {
+    id: 11, name: 'Cacao', region: 'D', chord: 'G', group: 'products-d', beats: 2,
+    notes: [
+      { p: 'B4', d: '8n', t: 0.0, s: 'Ca-' },
+      { p: 'B4', d: '8n', t: 0.5, s: '-cao,' }
+    ]
+  },
+  {
+    id: 12, name: 'Picadillo', region: 'D', chord: 'A', group: 'products-d', beats: 4,
+    notes: [
+      { p: 'B4',  d: '8n',  t: 0.0, s: 'Pi-' },
+      { p: 'B4',  d: '8n',  t: 0.5, s: '-ca-' },
+      { p: 'C#5', d: '4n',  t: 1.0, s: '-di-' },
+      { p: 'A4',  d: '4n.', t: 2.0, s: '-llo' }
+    ]
+  },
+
+  // ─── SISTEMA 3: PRODUCTOS 9 A 16 (Mi Mayor - Modulación 4#) ───────────────
+  {
+    id: 13, name: 'Paté', region: 'E', chord: 'E/B', group: 'products-e', beats: 2,
+    notes: [
+      { p: 'E5', d: '8n', t: 0.0, s: 'Pa-' },
+      { p: 'E5', d: '8n', t: 0.5, s: '-té,' }
+    ]
+  },
+  {
+    id: 14, name: 'Caballa', region: 'E', chord: 'B', group: 'products-e', beats: 2,
+    notes: [
+      { p: 'E5',  d: '8n', t: 0.0, s: 'Ca-' },
+      { p: 'D#5', d: '8n', t: 0.5, s: '-ba-' },
+      { p: 'B4',  d: '4n', t: 1.0, s: '-lla' }
+    ]
+  },
+  {
+    id: 15, name: 'Arroz', region: 'E', chord: 'A', group: 'products-e', beats: 2,
+    notes: [
+      { p: 'C#5', d: '8n', t: 0.0, s: 'A-' },
+      { p: 'C#5', d: '8n', t: 0.5, s: '-rroz' }
+    ]
+  },
+  {
+    id: 16, name: 'Arvejas', region: 'E', chord: 'B', group: 'products-e', beats: 4,
+    notes: [
+      { p: 'C#5', d: '8n', t: 0.0, s: 'y' },
+      { p: 'C#5', d: '8n', t: 0.5, s: 'Ar-' },
+      { p: 'D#5', d: '4n', t: 1.0, s: '-ve-' },
+      { p: 'B4',  d: '4n', t: 2.0, s: '-jas' }
+    ]
+  },
+  {
+    id: 17, name: 'Sardinas', region: 'E', chord: 'E/B', group: 'products-e', beats: 2,
+    notes: [
+      { p: 'B4', d: '8n', t: 0.0, s: 'Sar-' },
+      { p: 'E5', d: '8n', t: 0.5, s: '-di-' },
+      { p: 'E5', d: '8n', t: 1.0, s: '-nas' }
+    ]
+  },
+  {
+    id: 18, name: 'Atún', region: 'E', chord: 'B', group: 'products-e', beats: 2,
+    notes: [
+      { p: 'E5',  d: '8n', t: 0.0, s: 'y A-' },
+      { p: 'D#5', d: '2n', t: 0.5, s: '-tún' }
+    ]
+  },
+  {
+    id: 19, name: 'Choclo', region: 'E', chord: 'A', group: 'products-e', beats: 2,
+    notes: [
+      { p: 'C#5', d: '8n', t: 0.0, s: 'Cho-' },
+      { p: 'C#5', d: '8n', t: 0.5, s: '-clo y' }
+    ]
+  },
+  {
+    id: 20, name: 'Lentejas', region: 'E', chord: 'B', group: 'products-e', beats: 4,
+    notes: [
+      { p: 'C#5', d: '8n',  t: 0.0, s: 'Len-' },
+      { p: 'D#5', d: '4n',  t: 0.5, s: '-te-' },
+      { p: 'B4',  d: '4n.', t: 1.5, s: '-jas' }
+    ]
+  },
+
+  // ─── SISTEMA 4: CIERRE (Mi Mayor) ─────────────────────────────────────────
+  {
+    id: 21, name: 'Marolio (E)', region: 'E', chord: 'E/B', group: 'outro', beats: 4,
+    notes: [
+      { p: 'E4',  d: '8n',  t: 0.0, s: 'Ma-' },
+      { p: 'G#4', d: '4n',  t: 0.5, s: 'ro-' },
+      { p: 'G#4', d: '4n.', t: 1.5, s: '-lio' }
+    ]
+  },
+  {
+    id: 22, name: 'Sabor a tu vida (E)', region: 'E', chord: 'A → B', group: 'outro', beats: 4,
+    notes: [
+      { p: 'E4',  d: '8n', t: 0.0, s: 'le' },
+      { p: 'G#4', d: '8n', t: 0.5, s: 'da' },
+      { p: 'B4',  d: '8n', t: 1.0, s: 'sa-' },
+      { p: 'C#5', d: '8n', t: 1.5, s: '-bor' },
+      { p: 'B4',  d: '8n', t: 2.0, s: 'a' },
+      { p: 'A4',  d: '8n', t: 2.5, s: 'tu' },
+      { p: 'G#4', d: '4n', t: 3.0, s: 'vi-' },
+      { p: 'E4',  d: '4n', t: 3.5, s: '-da' }
+    ]
+  },
+  {
+    id: 23, name: 'Marolio está (E)', region: 'E', chord: 'A', group: 'outro', beats: 4,
+    notes: [
+      { p: 'E4', d: '8n', t: 0.0, s: 'Ma-' },
+      { p: 'E5', d: '8n', t: 0.5, s: 'ro-' },
+      { p: 'E5', d: '8n', t: 1.0, s: '-lio' },
+      { p: 'E5', d: '8n', t: 1.5, s: 'es-' },
+      { p: 'E5', d: '4n', t: 2.0, s: '-tá' }
+    ]
+  },
+  {
+    id: 24, name: 'Comienzo del día (E)', region: 'E', chord: 'B → E/B → E', group: 'outro', beats: 8,
+    notes: [
+      { p: 'C#5', d: '8n', t: 0.0, s: 'des-' },
+      { p: 'D#5', d: '8n', t: 0.5, s: '-de\'l' },
+      { p: 'E5',  d: '8n', t: 1.0, s: 'co-' },
+      { p: 'A5',  d: '8n', t: 1.5, s: '-mien-' },
+      { p: 'F#5', d: '8n', t: 2.0, s: '-zo' },
+      { p: 'E5',  d: '8n', t: 2.5, s: 'del' },
+      { p: 'D#5', d: '4n', t: 3.0, s: 'dí-' },
+      { p: 'E5',  d: '1m', t: 4.0, s: '-a' }
+    ]
+  }
+];
+
+// ════════════════════════════════════════════════════════════════════════════════
+// 2. SECUENCIA LINEAL COMPLETA PARA MODO CANCIÓN (18 COMPASES EXACTOS)
+// Métrica estricta de 4/4 a 120 BPM · Inicio exacto: Anacrusa en 0.0, c.1 en 0.5
+// ════════════════════════════════════════════════════════════════════════════════
+
+const SONG_MELODY = [
+  // ─── SISTEMA 1: INTRO (Re Mayor) ──────────────────────────────────────────
+  { time: 0.0, pitch: 'D4', dur: '8n', text: 'Ma-', cellId: 1, measure: 0 },
+  { time: 0.5, pitch: 'F#4', dur: '4n', text: 'ro-', cellId: 1, measure: 1 },
+  { time: 1.5, pitch: 'F#4', dur: '4n.', text: '-lio', cellId: 1, measure: 1 },
+  { time: 3.0, pitch: 'D4', dur: '8n', text: 'le', cellId: 2, measure: 1 },
+  { time: 3.5, pitch: 'F#4', dur: '8n', text: 'da', cellId: 2, measure: 1 },
+  { time: 4.0, pitch: 'A4', dur: '8n', text: 'sa-', cellId: 2, measure: 1 },
+  { time: 4.5, pitch: 'B4', dur: '8n', text: '-bor', cellId: 2, measure: 2 },
+  { time: 5.0, pitch: 'A4', dur: '8n', text: 'a', cellId: 2, measure: 2 },
+  { time: 5.5, pitch: 'G4', dur: '8n', text: 'tu', cellId: 2, measure: 2 },
+  { time: 6.0, pitch: 'F#4', dur: '4n', text: 'vi-', cellId: 2, measure: 2 },
+  { time: 7.0, pitch: 'D4', dur: '4n', text: '-da', cellId: 2, measure: 2 },
+  { time: 8.0, pitch: 'D4', dur: '8n', text: 'Ma-', cellId: 3, measure: 2 },
+  { time: 8.5, pitch: 'D5', dur: '8n', text: 'ro-', cellId: 3, measure: 3 },
+  { time: 9.0, pitch: 'D5', dur: '8n', text: '-lio', cellId: 3, measure: 3 },
+  { time: 9.5, pitch: 'D5', dur: '8n', text: 'es-', cellId: 3, measure: 3 },
+  { time: 10.0, pitch: 'D5', dur: '4n', text: '-tá', cellId: 3, measure: 3 },
+  { time: 11.0, pitch: 'B4', dur: '8n', text: 'des-', cellId: 4, measure: 3 },
+  { time: 11.5, pitch: 'D5', dur: '8n', text: '-de\'l', cellId: 4, measure: 3 },
+  { time: 12.0, pitch: 'E5', dur: '8n', text: 'co-', cellId: 4, measure: 3 },
+  { time: 12.5, pitch: 'G5', dur: '8n', text: '-mien-', cellId: 4, measure: 4 },
+  { time: 13.0, pitch: 'E5', dur: '8n', text: '-zo', cellId: 4, measure: 4 },
+  { time: 13.5, pitch: 'D5', dur: '8n', text: 'del', cellId: 4, measure: 4 },
+  { time: 14.0, pitch: 'C#5', dur: '4n', text: 'dí-', cellId: 4, measure: 4 },
+  { time: 15.0, pitch: 'D5', dur: '4n.', text: '-a', cellId: 4, measure: 4 },
+  { time: 16.5, pitch: 'D5', dur: '1m', text: '-a', cellId: 4, measure: 5 },
+
+  // ─── SISTEMA 2: PRODUCTOS 1 A 8 (Re Mayor) ────────────────────────────────
+  { time: 20.5, pitch: 'D5', dur: '8n', text: 'Ma-', cellId: 5, measure: 6 },
+  { time: 21.0, pitch: 'D5', dur: '8n', text: '-te,', cellId: 5, measure: 6 },
+  { time: 21.5, pitch: 'D5', dur: '8n', text: 'Ca-', cellId: 6, measure: 6 },
+  { time: 22.0, pitch: 'C#5', dur: '2n', text: '-fé', cellId: 6, measure: 6 },
+  { time: 24.0, pitch: 'D5', dur: '8n', text: 'Ha-', cellId: 7, measure: 6 },
+  { time: 24.5, pitch: 'B4', dur: '8n', text: '-ri-', cellId: 7, measure: 7 },
+  { time: 25.0, pitch: 'B4', dur: '8n', text: '-na y', cellId: 7, measure: 7 },
+  { time: 25.5, pitch: 'B4', dur: '8n', text: 'Pal-', cellId: 8, measure: 7 },
+  { time: 26.0, pitch: 'C#5', dur: '4n', text: '-mi-', cellId: 8, measure: 7 },
+  { time: 27.0, pitch: 'A4', dur: '4n.', text: '-tos', cellId: 8, measure: 7 },
+  { time: 28.5, pitch: 'D5', dur: '8n', text: 'Yer-', cellId: 9, measure: 8 },
+  { time: 29.0, pitch: 'D5', dur: '8n', text: '-ba,', cellId: 9, measure: 8 },
+  { time: 29.5, pitch: 'D5', dur: '8n', text: 'mer-', cellId: 10, measure: 8 },
+  { time: 30.0, pitch: 'C#5', dur: '8n', text: '-me-', cellId: 10, measure: 8 },
+  { time: 30.5, pitch: 'B4', dur: '8n', text: '-la-', cellId: 10, measure: 8 },
+  { time: 31.0, pitch: 'B4', dur: '4n', text: '-das', cellId: 10, measure: 8 },
+  { time: 32.0, pitch: 'B4', dur: '8n', text: 'Ca-', cellId: 11, measure: 8 },
+  { time: 32.5, pitch: 'B4', dur: '8n', text: '-cao,', cellId: 11, measure: 9 },
+  { time: 33.0, pitch: 'B4', dur: '8n', text: 'Pi-', cellId: 12, measure: 9 },
+  { time: 33.5, pitch: 'B4', dur: '8n', text: '-ca-', cellId: 12, measure: 9 },
+  { time: 34.0, pitch: 'C#5', dur: '4n', text: '-di-', cellId: 12, measure: 9 },
+  { time: 35.0, pitch: 'A4', dur: '4n.', text: '-llo', cellId: 12, measure: 9 },
+
+  // ─── SISTEMA 3: PRODUCTOS 9 A 16 (Mi Mayor - Modulación 4#) ───────────────
+  { time: 37.0, pitch: 'E5', dur: '8n', text: 'Pa-', cellId: 13, measure: 10 },
+  { time: 37.5, pitch: 'E5', dur: '8n', text: '-té,', cellId: 13, measure: 10 },
+  { time: 38.0, pitch: 'E5', dur: '8n', text: 'Ca-', cellId: 14, measure: 10 },
+  { time: 38.5, pitch: 'D#5', dur: '8n', text: '-ba-', cellId: 14, measure: 10 },
+  { time: 39.0, pitch: 'B4', dur: '4n', text: '-lla', cellId: 14, measure: 10 },
+  { time: 40.0, pitch: 'C#5', dur: '8n', text: 'A-', cellId: 15, measure: 10 },
+  { time: 40.5, pitch: 'C#5', dur: '8n', text: '-rroz', cellId: 15, measure: 11 },
+  { time: 41.0, pitch: 'C#5', dur: '8n', text: 'y', cellId: 16, measure: 11 },
+  { time: 41.5, pitch: 'C#5', dur: '8n', text: 'Ar-', cellId: 16, measure: 11 },
+  { time: 42.0, pitch: 'D#5', dur: '4n', text: '-ve-', cellId: 16, measure: 11 },
+  { time: 43.0, pitch: 'B4', dur: '4n', text: '-jas', cellId: 16, measure: 11 },
+  { time: 44.0, pitch: 'B4', dur: '8n', text: 'Sar-', cellId: 17, measure: 11 },
+  { time: 44.5, pitch: 'E5', dur: '8n', text: '-di-', cellId: 17, measure: 12 },
+  { time: 45.0, pitch: 'E5', dur: '8n', text: '-nas', cellId: 17, measure: 12 },
+  { time: 45.5, pitch: 'E5', dur: '8n', text: 'y A-', cellId: 18, measure: 12 },
+  { time: 46.0, pitch: 'D#5', dur: '2n', text: '-tún', cellId: 18, measure: 12 },
+  { time: 48.0, pitch: 'C#5', dur: '8n', text: 'Cho-', cellId: 19, measure: 12 },
+  { time: 48.5, pitch: 'C#5', dur: '8n', text: '-clo y', cellId: 19, measure: 13 },
+  { time: 49.0, pitch: 'C#5', dur: '8n', text: 'Len-', cellId: 20, measure: 13 },
+  { time: 49.5, pitch: 'D#5', dur: '4n', text: '-te-', cellId: 20, measure: 13 },
+  { time: 50.5, pitch: 'B4', dur: '4n.', text: '-jas', cellId: 20, measure: 13 },
+  { time: 52.0, pitch: 'E4', dur: '8n', text: 'Ma-', cellId: 21, measure: 13 },
+
+  // ─── SISTEMA 4: CIERRE (Mi Mayor) ─────────────────────────────────────────
+  { time: 52.5, pitch: 'G#4', dur: '4n', text: 'ro-', cellId: 21, measure: 14 },
+  { time: 53.5, pitch: 'G#4', dur: '4n.', text: '-lio', cellId: 21, measure: 14 },
+  { time: 55.0, pitch: 'E4', dur: '8n', text: 'le', cellId: 22, measure: 14 },
+  { time: 55.5, pitch: 'G#4', dur: '8n', text: 'da', cellId: 22, measure: 14 },
+  { time: 56.0, pitch: 'B4', dur: '8n', text: 'sa-', cellId: 22, measure: 14 },
+  { time: 56.5, pitch: 'C#5', dur: '8n', text: '-bor', cellId: 22, measure: 15 },
+  { time: 57.0, pitch: 'B4', dur: '8n', text: 'a', cellId: 22, measure: 15 },
+  { time: 57.5, pitch: 'A4', dur: '8n', text: 'tu', cellId: 22, measure: 15 },
+  { time: 58.0, pitch: 'G#4', dur: '4n', text: 'vi-', cellId: 22, measure: 15 },
+  { time: 59.0, pitch: 'E4', dur: '4n', text: '-da', cellId: 22, measure: 15 },
+  { time: 60.0, pitch: 'E4', dur: '8n', text: 'Ma-', cellId: 23, measure: 15 },
+  { time: 60.5, pitch: 'E5', dur: '8n', text: 'ro-', cellId: 23, measure: 16 },
+  { time: 61.0, pitch: 'E5', dur: '8n', text: '-lio', cellId: 23, measure: 16 },
+  { time: 61.5, pitch: 'E5', dur: '8n', text: 'es-', cellId: 23, measure: 16 },
+  { time: 62.0, pitch: 'E5', dur: '4n', text: '-tá', cellId: 23, measure: 16 },
+  { time: 63.0, pitch: 'C#5', dur: '8n', text: 'des-', cellId: 24, measure: 16 },
+  { time: 63.5, pitch: 'D#5', dur: '8n', text: '-de\'l', cellId: 24, measure: 16 },
+  { time: 64.0, pitch: 'E5', dur: '8n', text: 'co-', cellId: 24, measure: 16 },
+  { time: 64.5, pitch: 'A5', dur: '8n', text: '-mien-', cellId: 24, measure: 17 },
+  { time: 65.0, pitch: 'F#5', dur: '8n', text: '-zo', cellId: 24, measure: 17 },
+  { time: 65.5, pitch: 'E5', dur: '8n', text: 'del', cellId: 24, measure: 17 },
+  { time: 66.0, pitch: 'D#5', dur: '4n', text: 'dí-', cellId: 24, measure: 17 },
+  { time: 67.0, pitch: 'E5', dur: '4n.', text: '-a', cellId: 24, measure: 17 },
+  { time: 68.5, pitch: 'E5', dur: '1m', text: '-a (final)', cellId: 24, measure: 18 }
+];
+
+// Acompañamiento armónico y línea de bajo alineados exactamente a compases
+const SONG_CHORDS = [
+  // Intro (c. 1-5, Re Mayor)
+  { time: 0.5, dur: '1m', chord: ['F#3', 'A3', 'D4'], bass: 'D2', name: 'D', region: 'D', measure: 1 },
+  { time: 4.5, dur: '2n', chord: ['G3', 'B3', 'D4'], bass: 'G2', name: 'G', region: 'D', measure: 2 },
+  { time: 6.5, dur: '2n', chord: ['A3', 'C#4', 'E4'], bass: 'A2', name: 'A', region: 'D', measure: 2 },
+  { time: 8.5, dur: '2n', chord: ['F#3', 'A3', 'D4'], bass: 'A2', name: 'D/A', region: 'D', measure: 3 },
+  { time: 10.5, dur: '2n', chord: ['F#3', 'B3', 'D4'], bass: 'B2', name: 'Bm', region: 'D', measure: 3 },
+  { time: 12.5, dur: '2n', chord: ['E3', 'G3', 'C4'], bass: 'G2', name: 'C/G', region: 'D', measure: 4 },
+  { time: 14.5, dur: '2n', chord: ['E3', 'A3', 'C#4'], bass: 'A2', name: 'A', region: 'D', measure: 4 },
+  { time: 16.5, dur: '1m', chord: ['F#3', 'A3', 'D4'], bass: 'D2', name: 'D', region: 'D', measure: 5 },
+
+  // Productos 1 a 8 (c. 6-9, Re Mayor)
+  { time: 20.5, dur: '2n', chord: ['F#3', 'A3', 'D4'], bass: 'A2', name: 'D/A', region: 'D', measure: 6 },
+  { time: 22.5, dur: '2n', chord: ['E3', 'A3', 'C#4'], bass: 'A2', name: 'A', region: 'D', measure: 6 },
+  { time: 24.5, dur: '2n', chord: ['G3', 'B3', 'D4'], bass: 'G2', name: 'G', region: 'D', measure: 7 },
+  { time: 26.5, dur: '2n', chord: ['E3', 'A3', 'C#4'], bass: 'A2', name: 'A', region: 'D', measure: 7 },
+  { time: 28.5, dur: '2n', chord: ['F#3', 'A3', 'D4'], bass: 'A2', name: 'D/A', region: 'D', measure: 8 },
+  { time: 30.5, dur: '2n', chord: ['E3', 'A3', 'C#4'], bass: 'A2', name: 'A', region: 'D', measure: 8 },
+  { time: 32.5, dur: '2n', chord: ['G3', 'B3', 'D4'], bass: 'G2', name: 'G', region: 'D', measure: 9 },
+  { time: 34.5, dur: '2n', chord: ['E3', 'A3', 'C#4'], bass: 'A2', name: 'A', region: 'D', measure: 9 },
+
+  // Productos 9 a 16 (c. 10-13, Mi Mayor - Modulación)
+  { time: 36.5, dur: '2n', chord: ['G#3', 'B3', 'E4'], bass: 'B2', name: 'E/B', region: 'E', measure: 10 },
+  { time: 38.5, dur: '2n', chord: ['F#3', 'B3', 'D#4'], bass: 'B2', name: 'B', region: 'E', measure: 10 },
+  { time: 40.5, dur: '2n', chord: ['A3', 'C#4', 'E4'], bass: 'A2', name: 'A', region: 'E', measure: 11 },
+  { time: 42.5, dur: '2n', chord: ['F#3', 'B3', 'D#4'], bass: 'B2', name: 'B', region: 'E', measure: 11 },
+  { time: 44.5, dur: '2n', chord: ['G#3', 'B3', 'E4'], bass: 'B2', name: 'E/B', region: 'E', measure: 12 },
+  { time: 46.5, dur: '2n', chord: ['F#3', 'B3', 'D#4'], bass: 'B2', name: 'B', region: 'E', measure: 12 },
+  { time: 48.5, dur: '2n', chord: ['A3', 'C#4', 'E4'], bass: 'A2', name: 'A', region: 'E', measure: 13 },
+  { time: 50.5, dur: '2n', chord: ['F#3', 'B3', 'D#4'], bass: 'B2', name: 'B', region: 'E', measure: 13 },
+
+  // Cierre (c. 14-18, Mi Mayor)
+  { time: 52.5, dur: '1m', chord: ['G#3', 'B3', 'E4'], bass: 'B2', name: 'E/B', region: 'E', measure: 14 },
+  { time: 56.5, dur: '2n', chord: ['A3', 'C#4', 'E4'], bass: 'A2', name: 'A', region: 'E', measure: 15 },
+  { time: 58.5, dur: '2n', chord: ['F#3', 'B3', 'D#4'], bass: 'B2', name: 'B', region: 'E', measure: 15 },
+  { time: 60.5, dur: '1m', chord: ['A3', 'C#4', 'E4'], bass: 'A2', name: 'A', region: 'E', measure: 16 },
+  { time: 64.5, dur: '2n', chord: ['F#3', 'B3', 'D#4'], bass: 'B2', name: 'B', region: 'E', measure: 17 },
+  { time: 66.5, dur: '2n', chord: ['G#3', 'B3', 'E4'], bass: 'B2', name: 'E/B', region: 'E', measure: 17 },
+  { time: 68.5, dur: '1m', chord: ['G#3', 'B3', 'E4'], bass: 'E2', name: 'E', region: 'E', measure: 18 }
+];
+
+// ════════════════════════════════════════════════════════════════════════════════
+// 3. MOTOR DE AUDIO Y ESPACIALIZACIÓN ESTÉREO
+// ════════════════════════════════════════════════════════════════════════════════
+
+let currentBPM = 120;
+let patienceBase = 8;
+let allowBreaths = true;
+let allowVariation = true;
+let mode = 'song';
+let cellFilter = 'all';
+
+// ─── Timbres ───
+// TIMBRES se arma dinámicamente desde `timbres.yaml` al cargar la página.
+// Si el fetch falla (p. ej. index.html abierto con file://), se usa este fallback
+// embebido con 8 presets originales. Para editar/sumar sonidos, modificá timbres.yaml.
+const DEFAULT_TIMBRES_YAML = `
+timbres:
+  - { key: pluck,    label: Pluck,       type: Synth,   volume: -6,  oscillator: { type: triangle }, envelope: { attack: 0.002, decay: 0.35, sustain: 0.0, release: 0.4 } }
+  - { key: pad,      label: Pad,         type: Synth,   volume: -11, oscillator: { type: fatsine, spread: 22, count: 3 }, envelope: { attack: 0.4, decay: 0.4, sustain: 0.85, release: 1.4 } }
+  - { key: bell,     label: Campana,     type: FMSynth, volume: -14, harmonicity: 3.01, modulationIndex: 4.2, oscillator: { type: sine }, envelope: { attack: 0.001, decay: 1.4, sustain: 0.0, release: 1.2 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.4, sustain: 0.0, release: 0.4 } }
+  - { key: clarinet, label: Clarinete,   type: Synth,   volume: -8,  oscillator: { type: triangle }, envelope: { attack: 0.09, decay: 0.15, sustain: 0.75, release: 0.6 } }
+  - { key: flute,    label: Flauta,      type: Synth,   volume: -6,  oscillator: { type: sine }, envelope: { attack: 0.14, decay: 0.1, sustain: 0.85, release: 0.7 } }
+  - { key: pulse,    label: Pulse,       type: Synth,   volume: -12, oscillator: { type: pulse, width: 0.32 }, envelope: { attack: 0.005, decay: 0.18, sustain: 0.35, release: 0.3 } }
+  - { key: saw,      label: Saw suave,   type: Synth,   volume: -14, oscillator: { type: fatsawtooth, spread: 14, count: 2 }, envelope: { attack: 0.03, decay: 0.22, sustain: 0.55, release: 0.5 } }
+  - { key: marimba,  label: Marimba,     type: FMSynth, volume: -7,  harmonicity: 4.0, modulationIndex: 1.6, oscillator: { type: sine }, envelope: { attack: 0.001, decay: 0.45, sustain: 0.0, release: 0.4 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.35, sustain: 0.0, release: 0.3 } }
+`;
+
+let TIMBRES = {}; // mapa key → { label, build(), vol }
+
+function _buildTimbresFromList(list) {
+  const out = {};
+  list.forEach(def => {
+    const key = def.key;
+    if (!key) return;
+    const { key: _k, label, type = 'Synth', volume = -8, ...opts } = def;
+    const ToneClass =
+      type === 'FMSynth' ? Tone.FMSynth :
+      type === 'AMSynth' ? Tone.AMSynth :
+      Tone.Synth;
+    out[key] = {
+      label: label || key,
+      vol: volume,
+      build: () => new Tone.PolySynth(ToneClass, opts)
+    };
+  });
+  return out;
+}
+
+async function loadTimbres() {
+  try {
+    const res = await fetch('timbres.yaml', { cache: 'no-store' });
+    if (!res.ok) throw new Error('fetch failed');
+    const txt = await res.text();
+    const data = jsyaml.load(txt);
+    if (!data || !Array.isArray(data.timbres)) throw new Error('invalid yaml');
+    TIMBRES = _buildTimbresFromList(data.timbres);
+    console.log(`[IN M] timbres.yaml cargado: ${Object.keys(TIMBRES).length} timbres`);
+  } catch (e) {
+    console.warn('[IN M] usando timbres por defecto (no se pudo cargar timbres.yaml):', e.message);
+    const data = jsyaml.load(DEFAULT_TIMBRES_YAML);
+    TIMBRES = _buildTimbresFromList(data.timbres);
+  }
+}
+
+// Timbre, posición estéreo y color de cada músico.
+// Los colores son primarios de luz saturados: al mezclarse con screen blend,
+// rojo+verde=amarillo, rojo+azul=magenta, verde+azul=cyan, los 3=blanco.
+const voiceConfig = [
+  { timbre: 'rhodes',   pan: -0.55, label: 'Músico 1', pos: 'Izquierda', color: '#dc2626' },  // rojo
+  { timbre: 'dx7',      pan:  0.0,  label: 'Músico 2', pos: 'Centro',    color: '#16a34a' },  // verde
+  { timbre: 'marimba',  pan:  0.55, label: 'Músico 3', pos: 'Derecha',   color: '#4f80d4' }   // azul índigo suave
+];
+let player = null;
+let audioInitialized = false;
+
+// Nodos globales de audio
+let masterLimiter, masterReverb, masterVolumeNode, masterDelay;
+let leadSynth, chordSynth, bassSynth, pulseSynth;
+let voiceSynths = [];
+let voicePanners = [];
+
+function buildVoiceSynth(timbreKey) {
+  const t = TIMBRES[timbreKey] || TIMBRES.pluck;
+  const s = t.build();
+  s.volume.value = t.vol;
+  return s;
+}
+
+function swapVoiceTimbre(voiceId, timbreKey) {
+  if (!audioInitialized) {
+    voiceConfig[voiceId].timbre = timbreKey;
+    return;
+  }
+  const old = voiceSynths[voiceId];
+  if (old) {
+    try { old.releaseAll && old.releaseAll(); } catch (e) {}
+    try { old.disconnect(); } catch (e) {}
+    try { old.dispose(); } catch (e) {}
+  }
+  voiceConfig[voiceId].timbre = timbreKey;
+  const next = buildVoiceSynth(timbreKey);
+  next.connect(voicePanners[voiceId]);
+  voiceSynths[voiceId] = next;
+}
+
+async function initAudioEngine() {
+  if (audioInitialized) return;
+  await Tone.start();
+
+  masterLimiter = new Tone.Limiter(0).toDestination();
+  masterVolumeNode = new Tone.Volume(-3).connect(masterLimiter);
+  masterReverb = new Tone.Reverb({ decay: 3.0, preDelay: 0.02, wet: 0.25 }).connect(masterVolumeNode);
+  // Delay sincronizado al Transport (acepta notación "4n", "8n", etc.)
+  masterDelay = new Tone.FeedbackDelay({
+    delayTime: '4n',
+    feedback: 0.42,
+    wet: 0.07 // 10% del slider → wet 0.07
+  }).connect(masterReverb);
+
+  // Líder (modo Canción) · usa el mismo factory del YAML que las voces de Auto
+  // para que el nivel y carácter sean coherentes entre modos.
+  const leadTimbre = TIMBRES.rhodes ? 'rhodes' : Object.keys(TIMBRES)[0];
+  leadSynth = buildVoiceSynth(leadTimbre);
+  leadSynth.connect(masterDelay);
+
+  // Acompañamiento armónico
+  chordSynth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'fatsine', spread: 15, count: 2 },
+    envelope: { attack: 0.06, decay: 0.3, sustain: 0.8, release: 0.6 }
+  }).connect(masterDelay);
+  chordSynth.volume.value = -14;
+
+  // Bajo · sub-pad continuo (colchón sostenido). FatSine con sustain alto
+  // + release largo → las notas se superponen y mantienen el colchón grave vivo.
+  bassSynth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'fatsine', spread: 12, count: 2 },
+    envelope: { attack: 0.25, decay: 0.4, sustain: 0.95, release: 2.5 }
+  }).connect(masterVolumeNode);
+  bassSynth.volume.value = -12;
+
+  // Pulso (sutil, va al reverb directo)
+  pulseSynth = new Tone.MembraneSynth({
+    pitchDecay: 0.005,
+    octaves: 1.2,
+    envelope: { attack: 0.001, decay: 0.12, sustain: 0.01, release: 0.1 },
+    volume: -26
+  }).connect(masterReverb);
+
+  // Panners estéreo → entran al delay (que a su vez va al reverb)
+  voicePanners = voiceConfig.map(c => new Tone.Panner(c.pan).connect(masterDelay));
+
+  // Construir sintetizadores con el timbre configurado
+  voiceSynths = voiceConfig.map((c, i) => {
+    const s = buildVoiceSynth(c.timbre);
+    s.connect(voicePanners[i]);
+    return s;
+  });
+
+  audioInitialized = true;
+}
+
+// Preescucha de célula al hacer clic en la góndola
+async function previewCell(cellId) {
+  await initAudioEngine();
+  const cell = CELLS.find(c => c.id === cellId);
+  if (!cell || !leadSynth) return;
+
+  const now = Tone.now();
+  const beatDur = 60 / currentBPM;
+  cell.notes.forEach(n => {
+    leadSynth.triggerAttackRelease(n.p, n.d, now + n.t * beatDur);
+  });
+  updateKaraokeHUD(cell.name, cell.chord, cell.region, `Célula ${cell.id} (Preescucha)`);
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// 4. CONTROLADORES DE REPRODUCCIÓN (BASE, CANCIÓN Y ENSAMBLE IN M)
+// ════════════════════════════════════════════════════════════════════════════════
+
+class BasePlayer {
+  constructor() {
+    this.running = false;
+  }
+  stop() {
+    this.running = false;
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+  }
+}
+
+// ── MODO 1: CANCIÓN (18 compases completos y métrica estricta) ───────────────
+class SongPlayer extends BasePlayer {
+  start() {
+    this.running = true;
+    Tone.Transport.cancel();
+    Tone.Transport.bpm.value = currentBPM;
+
+    const beatDur = 60 / currentBPM;
+    const playHarmony = document.getElementById('chkHarmony').checked;
+    const playPulse = document.getElementById('chkPulse').checked;
+
+    // 1. Programar notas melódicas
+    SONG_MELODY.forEach(note => {
+      Tone.Transport.schedule(time => {
+        if (!this.running) return;
+        leadSynth.triggerAttackRelease(note.pitch, note.dur, time);
+        updateActiveCellInSong(note.cellId);
+        updateKaraokeHUD(note.text, getChordAtBeat(note.time), note.cellId > 12 ? 'E' : 'D', `Compás ${note.measure} / 18`, [note.cellId]);
+      }, note.time * beatDur);
+    });
+
+    // 2. Programar armonía (acordes + bajo)
+    if (playHarmony) {
+      SONG_CHORDS.forEach(c => {
+        Tone.Transport.schedule(time => {
+          if (!this.running) return;
+          chordSynth.triggerAttackRelease(c.chord, c.dur, time);
+          bassSynth.triggerAttackRelease(c.bass, c.dur, time);
+        }, c.time * beatDur);
+      });
+    }
+
+    // 3. Programar Pulso In C (D5 compases 1-9; E5 compases 10-18)
+    if (playPulse) {
+      const totalPulses = 72.5;
+      for (let b = 0; b <= totalPulses; b += 0.5) {
+        Tone.Transport.schedule(time => {
+          if (!this.running) return;
+          const pulseNote = b >= 36.5 ? 'E5' : 'D5';
+          pulseSynth.triggerAttackRelease(pulseNote, '16n', time);
+        }, b * beatDur);
+      }
+    }
+
+    // 4. Fin de la canción
+    const endTime = 72.5 * beatDur;
+    Tone.Transport.schedule(time => {
+      if (!this.running) return;
+      this.stop();
+      setStatus('Canción completa finalizada · 18 compases');
+      setTransportBtns(false);
+      clearActiveUI();
+      updateKaraokeHUD('«Fin de la canción»', '—', '—', 'Completado');
+    }, endTime);
+
+    Tone.Transport.start();
+    setStatus(`Canción · 18 compases · ${currentBPM} BPM`);
+  }
+}
+
+// ── MODO 2 Y 3: ENSAMBLE IN M · algoritmo In C con phasing + variación + pausas ──
+class EnsemblePlayer extends BasePlayer {
+  constructor(modeType = 'auto') {
+    super();
+    this.modeType = modeType;
+
+    // Cada voz: offset rítmico permanente (phasing), paciencia distinta,
+    // tiempo tocando continuo (para gatillar respiraciones orgánicas).
+    this.voices = [
+      {
+        id: 0, cellIdx: 0, tick: 0, reps: 0, done: false,
+        mode: modeType === 'human' ? 'manual' : 'auto',
+        wantsAdvance: false, isHeld: false, isResting: false, restTicksLeft: 0,
+        enterAt: 0, tickOffset: 0, patienceOffset: 3,
+        continuousTicks: 0, lastBreathTick: 0,
+        statusMsg: 'Iniciando'
+      },
+      {
+        id: 1, cellIdx: 0, tick: 0, reps: 0, done: false,
+        mode: modeType === 'human' ? 'manual' : 'auto',
+        wantsAdvance: false, isHeld: false, isResting: false, restTicksLeft: 0,
+        enterAt: 16, tickOffset: 1, patienceOffset: 0,
+        continuousTicks: 0, lastBreathTick: 0,
+        statusMsg: 'En espera'
+      },
+      {
+        id: 2, cellIdx: 0, tick: 0, reps: 0, done: false,
+        mode: modeType === 'human' ? 'manual' : 'auto',
+        wantsAdvance: false, isHeld: false, isResting: false, restTicksLeft: 0,
+        enterAt: 32, tickOffset: 2, patienceOffset: -2,
+        continuousTicks: 0, lastBreathTick: 0,
+        statusMsg: 'En espera'
+      }
+    ];
+
+    this.globalTick = 0;
+    this.ticksPerBar = 8; // 4/4 en corcheas
+
+    // Para "líder emergente": cuando una voz avanza, se registra. Las otras
+    // voces, al evaluar, suman un boost de probabilidad proporcional a la
+    // frescura de ese avance → simula el contagio humano "yo voy, yo voy".
+    this.lastAdvanceTick = -Infinity;
+    this.lastAdvanceCellIdx = -1;
+    this.lastAdvanceBy = -1;
+  }
+
+  getActiveCells() {
+    return cellFilter === 'products' ? CELLS.filter(c => c.group.startsWith('products')) : CELLS;
+  }
+
+  getVoicePatience(v) {
+    return Math.max(3, patienceBase + v.patienceOffset);
+  }
+
+  requestAdvance(voiceId) {
+    const v = this.voices[voiceId];
+    if (!v || v.done) return;
+    v.wantsAdvance = true;
+    v.statusMsg = 'Avance en cola';
+    renderActivePositions();
+  }
+
+  toggleHold(voiceId) {
+    const v = this.voices[voiceId];
+    if (!v || v.done) return;
+    v.isHeld = !v.isHeld;
+    v.statusMsg = v.isHeld ? 'Sostenido' : 'Reanudando';
+    renderActivePositions();
+  }
+
+  triggerBreath(voiceId) {
+    const v = this.voices[voiceId];
+    if (!v || v.done) return;
+    v.isResting = true;
+    v.restTicksLeft = this.ticksPerBar * 2;
+    v.statusMsg = 'Respirando';
+    renderActivePositions();
+  }
+
+  toggleVoiceMode(voiceId) {
+    const v = this.voices[voiceId];
+    if (!v) return;
+    v.mode = (v.mode === 'auto') ? 'manual' : 'auto';
+    buildInterpPanel();
+    renderActivePositions();
+  }
+
+  // ─── Variación musical por repetición ───
+  // Devuelve { pitch, duration, velocity } para una nota concreta.
+  _computeVariation(v, cell, note, cellList) {
+    let pitch = note.p;
+    let duration = note.d;
+    // Base: arco de obra (intro suave → productos tutti → cierre sostenido)
+    let velocity = this._arcVelocity(v, cell, cellList);
+
+    // Dinámica adaptativa por densidad: si están los 3 tocando, cada uno baja
+    // un pelo la velocity; cuando quedan 2 o 1, suben para llenar el espacio.
+    const activeCount = this.voices.filter(x => !x.done && !x.isResting).length;
+    const densityMult = activeCount >= 3 ? 0.80 : activeCount === 2 ? 0.95 : 1.12;
+    velocity *= densityMult;
+
+    if (!allowVariation) return { pitch, duration, velocity };
+
+    const targetPatience = this.getVoicePatience(v);
+    const over = Math.max(0, v.reps - targetPatience);
+
+    // Lead-in suave al cambiar de célula: las primeras 2 reps entran con fade-in,
+    // así suena "la nueva voz emerge" en vez de "cortó y empezó otra cosa".
+    if (v.reps < 2) {
+      const fadeIn = 0.55 + v.reps * 0.22; // rep 0 → 0.55 · rep 1 → 0.77
+      velocity *= fadeIn;
+    } else {
+      // Después del lead-in, swell suave por rep (sube hacia el medio, baja al final).
+      const repPhase = Math.min(1, v.reps / Math.max(1, targetPatience * 1.5));
+      const swell = Math.sin(repPhase * Math.PI) * 0.12 + 0.88;
+      velocity *= swell;
+    }
+
+    // Octava ocasional (reps avanzadas, baja probabilidad)
+    if (over >= 2 && Math.random() < 0.08) {
+      pitch = this._transposeOctave(pitch, Math.random() < 0.65 ? 1 : -1);
+    }
+
+    // Dropout muy raro: omite nota (velocity 0)
+    if (over >= 3 && Math.random() < 0.05) {
+      velocity = 0;
+    }
+
+    return { pitch, duration, velocity };
+  }
+
+  _transposeOctave(pitch, delta) {
+    const m = pitch.match(/^([A-G]#?)(\d)$/);
+    if (!m) return pitch;
+    const oct = Math.max(2, Math.min(6, parseInt(m[2], 10) + delta));
+    return `${m[1]}${oct}`;
+  }
+
+  // Registra el momento en que una voz saltó a una célula nueva.
+  // Lo usan las otras voces para evaluar "contagio".
+  _registerAdvance(v) {
+    this.lastAdvanceTick = this.globalTick;
+    this.lastAdvanceCellIdx = v.cellIdx;
+    this.lastAdvanceBy = v.id;
+  }
+
+  // Velocity base según en qué sección de la obra está (arco intro→productos→cierre).
+  _arcVelocity(v, cell, cellList) {
+    const total = cellList.length;
+    const pos = v.cellIdx / Math.max(1, total - 1);
+    // Intro (primeros 20%): suave. Productos: tutti. Cierre (últimos 20%): sostenido suave.
+    if (pos < 0.2) return 0.55 + pos * 0.75;        // 0.55 → 0.70
+    if (pos > 0.8) return 0.70 - (pos - 0.8) * 0.5; // 0.70 → 0.60
+    return 0.75;                                     // sección media
+  }
+
+  // ─── Decisión de pausa con sentido ───
+  _shouldBreathe(v, cellList) {
+    if (!allowBreaths) return false;
+    if (v.isHeld || v.isResting || v.mode === 'manual') return false;
+    const targetPatience = this.getVoicePatience(v);
+    if (v.reps < Math.max(2, targetPatience - 2)) return false; // sólo tras algunas reps
+
+    const sinceBreath = this.globalTick - v.lastBreathTick;
+    if (sinceBreath < this.ticksPerBar * 6) return false; // mínimo 6 compases entre pausas
+
+    const active = this.voices.filter(x => !x.done);
+
+    // Regla 1 — Unísono prolongado: si ≥2 voces están en la misma célula
+    // y esta voz es la que más repeticiones acumuló, respira para abrir espacio.
+    const sameCell = active.filter(o => o.cellIdx === v.cellIdx);
+    if (sameCell.length >= 2) {
+      const mostReps = sameCell.reduce((a, b) => a.reps > b.reps ? a : b);
+      if (mostReps.id === v.id && v.reps >= targetPatience + 2) return true;
+    }
+
+    // Regla 2 — Fatiga: si tocó mucho continuo (≥10 compases sin respirar), probabilidad alta de pausar.
+    if (v.continuousTicks > this.ticksPerBar * 10) {
+      if (Math.random() < 0.35) return true;
+    }
+
+    // Regla 3 — Respiración de grupo: cada ~8 compases, una voz al azar descansa.
+    if (sinceBreath > this.ticksPerBar * 10 && Math.random() < 0.12) return true;
+
+    return false;
+  }
+
+  // ─── Riley listening (versión aflojada) ───
+  _evaluateRileyListening(v, cellList) {
+    const targetPatience = this.getVoicePatience(v);
+    if (v.reps < targetPatience) {
+      v.statusMsg = 'Repitiendo el patrón';
+      return false;
+    }
+
+    if (v.cellIdx >= cellList.length - 1) return false;
+
+    const active = this.voices.filter(x => !x.done);
+    if (active.length <= 1) return Math.random() < 0.4;
+
+    const indices = active.map(x => x.cellIdx);
+    const minIdx = Math.min(...indices);
+    const meanIdx = indices.reduce((a, b) => a + b, 0) / indices.length;
+
+    const DISPERSION_CAP = 4;
+    if ((v.cellIdx - minIdx) >= DISPERSION_CAP) {
+      v.statusMsg = 'Esperando al grupo';
+      return false;
+    }
+
+    // Contagio: si otra voz avanzó hace poco a una célula por delante de la
+    // actual de esta voz, aumenta su probabilidad de seguir. Decae linealmente
+    // en 6 compases desde el salto.
+    let contagion = 0;
+    const ticksSinceLead = this.globalTick - this.lastAdvanceTick;
+    if (this.lastAdvanceBy !== v.id &&
+        ticksSinceLead < this.ticksPerBar * 6 &&
+        this.lastAdvanceCellIdx > v.cellIdx) {
+      const freshness = 1 - (ticksSinceLead / (this.ticksPerBar * 6));
+      contagion = freshness * 0.35;
+    }
+
+    if (v.cellIdx < meanIdx - 0.5) {
+      v.statusMsg = contagion > 0.15 ? 'Siguiendo el impulso' : 'Alcanzando al grupo';
+      return Math.random() < Math.min(0.9, 0.55 + (v.reps - targetPatience) * 0.12 + contagion);
+    }
+
+    v.statusMsg = contagion > 0.15 ? 'Siguiendo el impulso' : 'En flujo';
+    if (v.reps >= targetPatience * 2.5) return true;
+    return Math.random() < (0.18 + (v.reps - targetPatience) * 0.08 + contagion);
+  }
+
+  // ─── Emisión de una nota ───
+  _emitNote(v, cell, time, cellList) {
+    // Phase offset: la voz emite su nota cuando su `tick` interno
+    // (desplazado por tickOffset) coincide con la posición escrita en la célula.
+    const effectiveTick = (v.tick - v.tickOffset + 1000 * cell.beats * 2) % (cell.beats * 2);
+    const note = cell.notes.find(n => Math.round(n.t * 2) === effectiveTick);
+    if (!note) return;
+
+    const { pitch, duration, velocity } = this._computeVariation(v, cell, note, cellList);
+    if (velocity <= 0.02) return;
+
+    try {
+      voiceSynths[v.id].triggerAttackRelease(pitch, duration, time, Math.min(1, velocity));
+    } catch (e) { /* ignore polyphony overflow */ }
+  }
+
+  start() {
+    this.running = true;
+    Tone.Transport.cancel();
+    Tone.Transport.bpm.value = currentBPM;
+
+    const cellList = this.getActiveCells();
+    const playPulse = document.getElementById('chkPulse').checked;
+
+    this.globalTick = 0;
+    this.lastAdvanceTick = -Infinity;
+    this.lastAdvanceCellIdx = -1;
+    this.lastAdvanceBy = -1;
+    this.voices.forEach((v, i) => {
+      v.cellIdx = 0;
+      v.tick = 0;
+      v.reps = 0;
+      v.done = false;
+      v.finalReps = 0;
+      v.wantsAdvance = false;
+      v.isHeld = false;
+      v.isResting = false;
+      v.restTicksLeft = 0;
+      v.continuousTicks = 0;
+      v.lastBreathTick = 0;
+      v.statusMsg = i === 0 ? 'Entrando' : 'En espera';
+    });
+
+    Tone.Transport.scheduleRepeat(time => {
+      if (!this.running) return;
+
+      // Pulso In C — suave, un golpe cada compás (no cada corchea) para no saturar.
+      if (playPulse && this.globalTick % this.ticksPerBar === 0) {
+        const anyInE = this.voices.some(v => !v.done && cellList[v.cellIdx]?.region === 'E');
+        pulseSynth.triggerAttackRelease(anyInE ? 'E4' : 'D4', '8n', time, 0.35);
+      }
+
+      this.voices.forEach(v => {
+        if (v.done) return;
+        if (this.globalTick < v.enterAt) return;
+
+        const cell = cellList[v.cellIdx];
+        if (!cell) { v.done = true; return; }
+
+        // Si está descansando: cuenta ticks y no emite.
+        if (v.isResting) {
+          v.restTicksLeft--;
+          if (v.restTicksLeft <= 0) {
+            v.isResting = false;
+            v.lastBreathTick = this.globalTick;
+            v.continuousTicks = 0;
+            v.statusMsg = 'Vuelve del silencio';
+          }
+          return;
+        }
+
+        // Avance manual cuantizado al próximo beat (negra): si el user pidió Avanzar
+        // y estamos en el inicio de un beat (cada 2 corcheas), salta ya sin esperar
+        // al final del ciclo entero de la célula.
+        if (v.wantsAdvance && !v.isHeld && v.cellIdx < cellList.length - 1 &&
+            (this.globalTick % 2 === 0)) {
+          v.cellIdx++;
+          v.tick = 0;
+          v.reps = 0;
+          v.wantsAdvance = false;
+          v.statusMsg = 'Avanzó';
+          this._registerAdvance(v);
+          return;
+        }
+
+        this._emitNote(v, cell, time, cellList);
+        v.tick++;
+        v.continuousTicks++;
+
+        const totalTicks = cell.beats * 2;
+
+        if (v.tick >= totalTicks) {
+          v.tick = 0;
+          v.reps++;
+
+          if (v.isHeld) {
+            v.statusMsg = 'Sostenido';
+            return;
+          }
+
+          // ¿Toma una pausa larga?
+          if (this._shouldBreathe(v, cellList)) {
+            v.isResting = true;
+            v.restTicksLeft = this.ticksPerBar * (2 + Math.floor(Math.random() * 3)); // 2–4 compases
+            v.statusMsg = 'Respirando';
+            return;
+          }
+
+          const lastIdx = cellList.length - 1;
+
+          if (v.cellIdx >= lastIdx) {
+            const allOnLast = this.voices.every(x => x.cellIdx >= lastIdx || x.done);
+            if (v.mode === 'manual') {
+              if (v.wantsAdvance) {
+                v.done = true;
+                v.wantsAdvance = false;
+                v.statusMsg = 'Concluido';
+              } else {
+                v.statusMsg = 'Final · esperando avanzar';
+              }
+            } else {
+              if (!allOnLast) {
+                v.statusMsg = 'Final · esperando al grupo';
+                return;
+              }
+              v.finalReps = (v.finalReps || 0) + 1;
+              v.statusMsg = `Resolución (${v.finalReps}/3)`;
+              if (v.finalReps >= 3) {
+                v.done = true;
+                v.statusMsg = 'Concluido';
+              }
+            }
+            return;
+          }
+
+          let advance = false;
+          if (v.mode === 'manual') {
+            if (v.wantsAdvance) {
+              advance = true;
+              v.wantsAdvance = false;
+            } else {
+              v.statusMsg = 'Manual · avanzar';
+            }
+          } else {
+            advance = this._evaluateRileyListening(v, cellList);
+          }
+
+          if (advance) {
+            v.cellIdx++;
+            v.reps = 0;
+            if (v.cellIdx >= cellList.length) {
+              v.done = true;
+              v.statusMsg = 'Concluido';
+            } else {
+              this._registerAdvance(v);
+            }
+          }
+        }
+      });
+
+      this.globalTick++;
+
+      if (this.voices.every(v => v.done)) {
+        this.stop();
+        setStatus('Obra finalizada');
+        setTransportBtns(false);
+        clearActiveUI();
+        updateKaraokeHUD('Fin', 'E', 'E', 'Completado');
+        renderActivePositions();
+        return;
+      }
+
+      requestAnimationFrame(() => renderActivePositions());
+    }, '8n');
+
+    Tone.Transport.start();
+    setStatus(`${this.modeType === 'auto' ? 'Auto' : 'Humano'} · ${currentBPM} BPM`);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// 5. INTERFAZ Y RENDERIZADO VISUAL
+// ════════════════════════════════════════════════════════════════════════════════
+
+function getVisibleCells() {
+  return cellFilter === 'products' ? CELLS.filter(c => c.group.startsWith('products')) : CELLS;
+}
+
+// Agrupa las células en 3 filas según su rol formal:
+//   intro          → células 1–4
+//   products-d/e   → células 5–20 (16 productos)
+//   outro          → células 21–24
+function _groupCellsForGondola(cells) {
+  return [
+    { label: 'Intro',     cells: cells.filter(c => c.group === 'intro') },
+    { label: 'Productos', cells: cells.filter(c => c.group === 'products-d' || c.group === 'products-e') },
+    { label: 'Cierre',    cells: cells.filter(c => c.group === 'outro') }
+  ];
+}
+
+function buildGondola() {
+  const wrapper = document.getElementById('gondolaWrapper');
+  if (!wrapper) return;
+  wrapper.innerHTML = '';
+  const cells = getVisibleCells();
+  document.getElementById('cellCountLabel').textContent = cells.length;
+
+  const groups = _groupCellsForGondola(cells);
+
+  groups.forEach(group => {
+    if (group.cells.length === 0) return;
+    const row = document.createElement('div');
+    row.className = 'gondola-row';
+    row.innerHTML = `<div class="gondola-row-label">${group.label}</div><div class="gondola"></div>`;
+    const inner = row.querySelector('.gondola');
+
+    group.cells.forEach(cell => {
+      const el = document.createElement('div');
+      el.className = `cell region-${cell.region}`;
+      el.id = `cell-${cell.id}`;
+      el.dataset.id = cell.id;
+
+      const syllables = cell.notes
+        .map(n => (n.s || '').trim())
+        .filter(Boolean)
+        .join(' ');
+
+      el.innerHTML = `
+        <div class="cell-top">
+          <span class="cell-num">${String(cell.id).padStart(2, '0')}</span>
+          <span class="cell-region-tag">${cell.region}</span>
+        </div>
+        <div class="cell-name">${cell.name}</div>
+        <div class="cell-chord">${cell.chord}</div>
+        <div class="cell-syllables" title="${syllables}">${syllables || '—'}</div>
+        <div class="cell-markers">
+          <div class="mk mk-song" id="mks-${cell.id}"></div>
+          <div class="mk mk-0" id="mk0-${cell.id}"></div>
+          <div class="mk mk-1" id="mk1-${cell.id}"></div>
+          <div class="mk mk-2" id="mk2-${cell.id}"></div>
+        </div>
+      `;
+
+      el.addEventListener('click', () => previewCell(cell.id));
+      inner.appendChild(el);
+    });
+
+    wrapper.appendChild(row);
+  });
+}
+
+function buildInterpPanel() {
+  const grid = document.getElementById('interpGrid');
+  const header = document.getElementById('interpSectionHeader');
+  grid.innerHTML = '';
+
+  // En modo Canción no hay nada interactivo que mostrar — se oculta el panel.
+  if (mode === 'song') {
+    grid.style.display = 'none';
+    if (header) header.style.display = 'none';
+    return;
+  }
+
+  grid.style.display = '';
+  if (header) header.style.display = '';
+  document.getElementById('interpHeaderTitle').textContent = 'Intérpretes';
+
+  const timbreOptions = Object.entries(TIMBRES)
+    .map(([k, t]) => `<option value="${k}">${t.label}</option>`).join('');
+
+  voiceConfig.forEach((cfg, mid) => {
+    const voiceState = player && player.voices ? player.voices[mid] : null;
+    const isManual = voiceState ? voiceState.mode === 'manual' : (mode === 'human');
+    const isHeld = voiceState ? voiceState.isHeld : false;
+
+    const card = document.createElement('div');
+    card.className = 'interp-card';
+    card.id = `card-m-${mid}`;
+    card.style.setProperty('--v-color', cfg.color);
+    card.style.setProperty('--v-color-soft', `var(--v${mid}-soft)`);
+    card.innerHTML = `
+      <div class="interp-card-top">
+        <div class="interp-id-block">
+          <div class="interp-name">${cfg.label}</div>
+          <div class="interp-position">${cfg.pos}</div>
+        </div>
+        <select class="timbre-select" id="timbre-${mid}" title="Timbre del canal">
+          ${timbreOptions}
+        </select>
+      </div>
+      <div class="interp-content">
+        <div class="interp-cell-name" id="ic-v${mid}">—</div>
+        <div class="interp-cell-chord" id="icho-v${mid}">—</div>
+      </div>
+      <div class="rep-bar-wrap">
+        <div class="rep-bar-fill" id="repfill-v${mid}"></div>
+      </div>
+      <div class="interp-stats">
+        <span id="irep-v${mid}">rep 0 / 8</span>
+        <span class="listening-badge" id="istat-v${mid}">En espera</span>
+        <span id="ireg-v${mid}">—</span>
+      </div>
+      <div class="interp-actions">
+        <button class="btn-row ${isManual ? 'active' : ''}" id="btn-mode-${mid}"
+          title="Modo del músico. Auto: el algoritmo decide los avances. Manual: sólo avanza cuando apretás Avanzar.">
+          <span>${isManual ? 'Manual' : 'Auto'}</span>
+        </button>
+        <button class="btn-row ${isHeld ? 'active' : ''}" id="btn-hold-${mid}"
+          title="Pausa el avance: el músico sigue tocando el mismo patrón en loop hasta que lo destildes. Útil para crear pedales/ostinatos.">
+          <span>Pausar</span>
+        </button>
+        <button class="btn-row" id="btn-breath-${mid}"
+          title="Respirar: 2 compases en silencio y vuelve solo.">
+          <span>Respirar</span>
+        </button>
+        <button class="btn-row" id="adv-btn-${mid}"
+          title="Avanza a la siguiente célula, cuantizado al próximo beat. Atajo: tecla ${mid + 1}.">
+          <span>Avanzar</span>
+        </button>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    const sel = document.getElementById(`timbre-${mid}`);
+    sel.value = cfg.timbre;
+    sel.addEventListener('change', e => swapVoiceTimbre(mid, e.target.value));
+
+    document.getElementById(`adv-btn-${mid}`).addEventListener('click', () => {
+      if (player && typeof player.requestAdvance === 'function') player.requestAdvance(mid);
+    });
+
+    document.getElementById(`btn-mode-${mid}`).addEventListener('click', () => {
+      if (player && typeof player.toggleVoiceMode === 'function') player.toggleVoiceMode(mid);
+    });
+
+    document.getElementById(`btn-hold-${mid}`).addEventListener('click', () => {
+      if (player && typeof player.toggleHold === 'function') {
+        player.toggleHold(mid);
+        const btn = document.getElementById(`btn-hold-${mid}`);
+        const v = player.voices[mid];
+        btn.classList.toggle('active', v.isHeld);
+      }
+    });
+
+    document.getElementById(`btn-breath-${mid}`).addEventListener('click', () => {
+      if (player && typeof player.triggerBreath === 'function') player.triggerBreath(mid);
+    });
+  });
+}
+
+function clearActiveUI() {
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('active-song', 'active-mixed');
+    c.style.background = '';
+    c.style.borderColor = '';
+  });
+  document.querySelectorAll('.mk').forEach(m => m.classList.remove('on'));
+}
+
+// Convierte "#rrggbb" a {r, g, b}
+function _hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  return {
+    r: parseInt(h.slice(0, 2), 16),
+    g: parseInt(h.slice(2, 4), 16),
+    b: parseInt(h.slice(4, 6), 16)
+  };
+}
+
+// Mezcla aditiva (screen blend) de los colores de las voces presentes.
+// Fórmula: result = 255 - (255-a)·(255-b)/255 por canal.
+// Rojo+Verde = Amarillo, Rojo+Azul = Magenta, Verde+Azul = Cyan, los 3 = Blanco.
+function _mixVoiceColors(voiceIds) {
+  if (voiceIds.length === 0) return null;
+  const colors = voiceIds.map(id => _hexToRgb(voiceConfig[id].color));
+  let r = 0, g = 0, b = 0;
+  colors.forEach(c => {
+    r = r + c.r - (r * c.r / 255);
+    g = g + c.g - (g * c.g / 255);
+    b = b + c.b - (b * c.b / 255);
+  });
+  r = Math.round(r); g = Math.round(g); b = Math.round(b);
+  // Mayor presencia visual cuando hay más voces apiladas.
+  const alphaFill   = 0.28 + (voiceIds.length - 1) * 0.14;  // 0.28 → 0.42 → 0.56
+  const alphaStroke = 0.75 + (voiceIds.length - 1) * 0.12;  // 0.75 → 0.87 → 1.0
+  return {
+    fill:   `rgba(${r}, ${g}, ${b}, ${alphaFill})`,
+    stroke: `rgba(${r}, ${g}, ${b}, ${Math.min(1, alphaStroke)})`
+  };
+}
+
+function updateActiveCellInSong(cellId) {
+  clearActiveUI();
+  const cellEl = document.getElementById(`cell-${cellId}`);
+  if (cellEl) {
+    cellEl.classList.add('active-song');
+    const mk = document.getElementById(`mks-${cellId}`);
+    if (mk) mk.classList.add('on');
+    cellEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+}
+
+function renderActivePositions() {
+  if (!player || mode === 'song') return;
+  clearActiveUI();
+
+  const cellList = player.getActiveCells();
+
+  // Agrupa qué músicos están "sonando" (no en descanso) en cada célula.
+  const voicesByCell = {}; // cellId → [voiceId, ...]
+  player.voices.forEach(v => {
+    if (v.done || v.cellIdx >= cellList.length) return;
+    if (v.isResting) return;
+    const c = cellList[v.cellIdx];
+    if (!c) return;
+    (voicesByCell[c.id] = voicesByCell[c.id] || []).push(v.id);
+  });
+
+  // Pinta cada célula activa mezclando los colores de las voces presentes.
+  Object.entries(voicesByCell).forEach(([cellId, mids]) => {
+    const cellEl = document.getElementById(`cell-${cellId}`);
+    if (!cellEl) return;
+    const mix = _mixVoiceColors(mids);
+    if (!mix) return;
+    cellEl.classList.add('active-mixed');
+    cellEl.style.background = mix.fill;
+    cellEl.style.borderColor = mix.stroke;
+  });
+
+  player.voices.forEach(v => {
+    const icName = document.getElementById(`ic-v${v.id}`);
+    const icChord = document.getElementById(`icho-v${v.id}`);
+    const icRep = document.getElementById(`irep-v${v.id}`);
+    const icReg = document.getElementById(`ireg-v${v.id}`);
+    const icStat = document.getElementById(`istat-v${v.id}`);
+    const repFill = document.getElementById(`repfill-v${v.id}`);
+    const advBtn = document.getElementById(`adv-btn-${v.id}`);
+    const card = document.getElementById(`card-m-${v.id}`);
+    const targetPatience = player.getVoicePatience(v);
+
+    if (v.done || v.cellIdx >= cellList.length) {
+      if (icName) icName.textContent = 'Concluido';
+      if (icChord) icChord.textContent = '—';
+      if (icStat) { icStat.textContent = 'Fin'; icStat.className = 'listening-badge'; }
+      if (repFill) repFill.style.width = '100%';
+      if (advBtn) advBtn.disabled = true;
+      if (card) card.classList.remove('playing');
+      return;
+    }
+
+    const c = cellList[v.cellIdx];
+    if (icName) icName.textContent = `${c.id}. ${c.name}`;
+    if (icChord) icChord.textContent = c.chord;
+    if (icRep) icRep.textContent = `rep ${v.reps} / ${targetPatience}`;
+    if (icReg) icReg.textContent = c.region === 'E' ? 'Mi' : 'Re';
+
+    if (repFill) {
+      const pct = Math.min(100, Math.round((v.reps / targetPatience) * 100));
+      repFill.style.width = `${pct}%`;
+    }
+
+    if (icStat) {
+      icStat.textContent = v.statusMsg || 'En flujo';
+      icStat.className = 'listening-badge';
+      if (v.isHeld) icStat.classList.add('hold');
+      else if (v.isResting) icStat.classList.add('rest');
+      else if (v.statusMsg?.includes('Esperando') || v.statusMsg?.includes('Final')) icStat.classList.add('wait');
+    }
+
+    if (advBtn) {
+      advBtn.classList.toggle('active', !!v.wantsAdvance);
+      advBtn.disabled = v.done || v.cellIdx >= cellList.length - 1;
+      const label = advBtn.querySelector('span:first-child');
+      if (label) label.textContent = v.wantsAdvance ? 'Al cerrar…' : 'Avanzar';
+    }
+
+    if (card) card.classList.toggle('playing', !v.isResting && !v.done);
+
+    const mk = document.getElementById(`mk${v.id}-${c.id}`);
+    if (mk) mk.classList.add('on');
+    // El tinte de la célula ya lo pintó el bloque anterior (voicesByCell).
+  });
+}
+
+function updateKaraokeHUD(_text, chord, region, measureStr) {
+  document.getElementById('hudChord').textContent = chord || '—';
+  const regEl = document.getElementById('hudRegion');
+  regEl.textContent = region === 'E' ? 'Mi mayor' : (region === 'D' ? 'Re mayor' : '—');
+  document.getElementById('hudMeasure').textContent = measureStr || '';
+}
+
+function getChordAtBeat(beat) {
+  const match = [...SONG_CHORDS].reverse().find(c => beat >= c.time);
+  return match ? match.name : 'D';
+}
+
+function setStatus(msg) {
+  const el = document.getElementById('statusBadge');
+  if (el) el.textContent = msg;
+}
+
+function setTransportBtns(isPlaying) {
+  const btn = document.getElementById('btnTransport');
+  btn.dataset.playing = isPlaying ? 'true' : 'false';
+  btn.title = isPlaying ? 'Parar (Espacio)' : 'Iniciar (Espacio)';
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// 6. EVENT LISTENERS Y CONTROL
+// ════════════════════════════════════════════════════════════════════════════════
+
+const btnTransport = document.getElementById('btnTransport');
+
+async function startPlayback() {
+  await initAudioEngine();
+  if (player) { player.stop(); player = null; }
+
+  if (mode === 'song')   player = new SongPlayer();
+  if (mode === 'auto')   player = new EnsemblePlayer('auto');
+  if (mode === 'human')  player = new EnsemblePlayer('human');
+
+  player.start();
+  setTransportBtns(true);
+  buildInterpPanel();
+  renderActivePositions();
+}
+
+function stopPlayback() {
+  if (player) { player.stop(); player = null; }
+  setTransportBtns(false);
+  setStatus('Parado');
+  clearActiveUI();
+}
+
+btnTransport.addEventListener('click', () => {
+  if (btnTransport.dataset.playing === 'true') stopPlayback();
+  else startPlayback();
+});
+
+// Selector de Modo
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (player) { player.stop(); player = null; setTransportBtns(false); }
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    buildInterpPanel();
+    clearActiveUI();
+    setStatus('Listo');
+  });
+});
+
+
+// Slider Tempo BPM
+document.getElementById('bpmInput').addEventListener('input', e => {
+  currentBPM = parseInt(e.target.value, 10);
+  document.getElementById('bpmVal').textContent = currentBPM;
+  if (Tone.Transport) Tone.Transport.bpm.value = currentBPM;
+});
+
+// Slider Paciencia / Reps de Escucha
+document.getElementById('patienceInput').addEventListener('input', e => {
+  patienceBase = parseInt(e.target.value, 10);
+  document.getElementById('patienceVal').textContent = `${patienceBase} reps`;
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.reps, 10) === patienceBase);
+  });
+});
+
+// Presets de Paciencia
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    patienceBase = parseInt(btn.dataset.reps, 10);
+    document.getElementById('patienceInput').value = patienceBase;
+    document.getElementById('patienceVal').textContent = `${patienceBase}`;
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+document.getElementById('chkBreaths').addEventListener('change', e => {
+  allowBreaths = e.target.checked;
+});
+
+document.getElementById('chkVariation').addEventListener('change', e => {
+  allowVariation = e.target.checked;
+});
+
+document.getElementById('volInput').addEventListener('input', e => {
+  const vol = parseFloat(e.target.value);
+  document.getElementById('volVal').textContent = vol <= -30 ? '—' : `${vol}`;
+  if (masterVolumeNode) {
+    masterVolumeNode.volume.value = vol <= -30 ? -Infinity : vol;
+  }
+});
+
+// Reverb · slider 0-100 → wet 0-0.7 (0 apaga)
+document.getElementById('reverbInput').addEventListener('input', e => {
+  const n = parseInt(e.target.value, 10);
+  document.getElementById('reverbVal').textContent = `${n}`;
+  if (masterReverb) masterReverb.wet.value = (n / 100) * 0.7;
+});
+
+// Delay · slider 0-100 → wet 0-0.7 (0 apaga)
+document.getElementById('delayInput').addEventListener('input', e => {
+  const n = parseInt(e.target.value, 10);
+  document.getElementById('delayVal').textContent = `${n}`;
+  if (masterDelay) masterDelay.wet.value = (n / 100) * 0.7;
+});
+
+// Delay time (división rítmica relativa al tempo del Transport)
+document.getElementById('delayTimeSelect').addEventListener('change', e => {
+  if (masterDelay) masterDelay.delayTime.value = e.target.value;
+});
+
+// Control por Teclado
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    document.getElementById('btnTransport').click();
+  } else if (e.key === 'Escape') {
+    stopPlayback();
+  } else if (player instanceof EnsemblePlayer) {
+    if (e.key === '1') player.requestAdvance(0);
+    if (e.key === '2') player.requestAdvance(1);
+    if (e.key === '3') player.requestAdvance(2);
+  }
+});
+
+// Modales
+const modal = document.getElementById('sheetModal');
+document.getElementById('btnOpenSheet').addEventListener('click', () => modal.classList.add('open'));
+const btnHeaderSheet = document.getElementById('btnHeaderSheet');
+if (btnHeaderSheet) {
+  btnHeaderSheet.addEventListener('click', () => modal.classList.add('open'));
+}
+document.getElementById('btnCloseSheet').addEventListener('click', () => modal.classList.remove('open'));
+modal.addEventListener('click', e => {
+  if (e.target === modal) modal.classList.remove('open');
+});
+
+const aboutModal = document.getElementById('aboutModal');
+document.getElementById('btnOpenAbout').addEventListener('click', () => aboutModal.classList.add('open'));
+document.getElementById('btnCloseAbout').addEventListener('click', () => aboutModal.classList.remove('open'));
+aboutModal.addEventListener('click', e => {
+  if (e.target === aboutModal) aboutModal.classList.remove('open');
+});
+
+// ════════════════════════════════════════════════════════════════════════════════
+// Teclado · tocar sobre la obra en escala de Re mayor
+// ════════════════════════════════════════════════════════════════════════════════
+
+const KB_SCALE = ['D4', 'E4', 'F#4', 'G4', 'A4', 'B4', 'C#5', 'D5'];
+const KB_SHORTCUTS = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'];
+let keyboardSynth = null;
+let keyboardTimbre = 'rhodes';
+let keyboardHold = false;
+let keyboardVol = -6;   // dB · controlado por el slider propio del teclado
+const kbHeldNotes = new Set();
+
+function buildKeyboard() {
+  const keysEl = document.getElementById('keyboardKeys');
+  if (!keysEl) return;
+  keysEl.innerHTML = KB_SCALE.map((note, i) => `
+    <button class="kb-key" data-note="${note}" data-shortcut="${KB_SHORTCUTS[i]}">
+      <span class="kb-note">${note}</span>
+      <span class="kb-shortcut">${KB_SHORTCUTS[i].toUpperCase()}</span>
+    </button>
+  `).join('');
+
+  const sel = document.getElementById('kbTimbreSelect');
+  if (sel) {
+    sel.innerHTML = Object.entries(TIMBRES)
+      .map(([k, t]) => `<option value="${k}">${t.label}</option>`).join('');
+    if (!TIMBRES[keyboardTimbre]) keyboardTimbre = Object.keys(TIMBRES)[0];
+    sel.value = keyboardTimbre;
+    sel.addEventListener('change', e => {
+      keyboardTimbre = e.target.value;
+      _rebuildKeyboardSynth();
+    });
+  }
+
+  keysEl.querySelectorAll('.kb-key').forEach(btn => {
+    const note = btn.dataset.note;
+    btn.addEventListener('mousedown', e => { e.preventDefault(); _playKbNote(note); });
+    btn.addEventListener('mouseup',   () => _stopKbNote(note));
+    btn.addEventListener('mouseleave',() => _stopKbNote(note));
+    btn.addEventListener('touchstart', e => { e.preventDefault(); _playKbNote(note); }, { passive: false });
+    btn.addEventListener('touchend',   e => { e.preventDefault(); _stopKbNote(note); });
+  });
+
+  const holdBtn = document.getElementById('kbHoldBtn');
+  if (holdBtn) {
+    holdBtn.addEventListener('click', () => {
+      keyboardHold = !keyboardHold;
+      holdBtn.classList.toggle('active', keyboardHold);
+      if (!keyboardHold) _releaseAllKb();
+    });
+  }
+
+  const volInput = document.getElementById('kbVolInput');
+  if (volInput) {
+    volInput.addEventListener('input', e => {
+      const v = parseFloat(e.target.value);
+      keyboardVol = v;
+      document.getElementById('kbVolVal').textContent = v <= -30 ? '—' : `${v}`;
+      if (keyboardSynth) {
+        keyboardSynth.volume.value = v <= -30 ? -Infinity : v;
+      }
+    });
+  }
+}
+
+async function _rebuildKeyboardSynth() {
+  await initAudioEngine();
+  if (keyboardSynth) {
+    try { keyboardSynth.releaseAll && keyboardSynth.releaseAll(); } catch (e) {}
+    try { keyboardSynth.disconnect(); } catch (e) {}
+    try { keyboardSynth.dispose(); } catch (e) {}
+  }
+  keyboardSynth = buildVoiceSynth(keyboardTimbre);
+  keyboardSynth.connect(masterDelay);
+  // Aplicar el volumen propio del slider del teclado (sobreescribe el default del YAML)
+  keyboardSynth.volume.value = keyboardVol <= -30 ? -Infinity : keyboardVol;
+  kbHeldNotes.clear();
+  document.querySelectorAll('.kb-key.held').forEach(k => k.classList.remove('held'));
+}
+
+async function _playKbNote(note) {
+  await initAudioEngine();
+  if (!keyboardSynth) await _rebuildKeyboardSynth();
+  const keyEl = document.querySelector(`.kb-key[data-note="${note}"]`);
+
+  if (keyboardHold) {
+    // Toggle: si ya suena, apagarla; si no, prenderla
+    if (kbHeldNotes.has(note)) {
+      try { keyboardSynth.triggerRelease(note); } catch (e) {}
+      kbHeldNotes.delete(note);
+      keyEl?.classList.remove('held');
+    } else {
+      try { keyboardSynth.triggerAttack(note); } catch (e) {}
+      kbHeldNotes.add(note);
+      keyEl?.classList.add('held');
+    }
+  } else {
+    try { keyboardSynth.triggerAttack(note); } catch (e) {}
+    keyEl?.classList.add('active');
+  }
+}
+
+function _stopKbNote(note) {
+  if (keyboardHold) return; // en modo hold, release es manual (reclick)
+  if (keyboardSynth) {
+    try { keyboardSynth.triggerRelease(note); } catch (e) {}
+  }
+  document.querySelector(`.kb-key[data-note="${note}"]`)?.classList.remove('active');
+}
+
+function _releaseAllKb() {
+  if (keyboardSynth) {
+    kbHeldNotes.forEach(n => { try { keyboardSynth.triggerRelease(n); } catch (e) {} });
+  }
+  kbHeldNotes.clear();
+  document.querySelectorAll('.kb-key.held').forEach(k => k.classList.remove('held'));
+}
+
+// Atajos QWERTY del teclado musical (A S D F G H J K)
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.repeat) return;
+  const idx = KB_SHORTCUTS.indexOf(e.key.toLowerCase());
+  if (idx === -1) return;
+  e.preventDefault();
+  const note = KB_SCALE[idx];
+  _playKbNote(note);
+  document.querySelector(`.kb-key[data-note="${note}"]`)?.classList.add('pressed');
+});
+
+document.addEventListener('keyup', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  const idx = KB_SHORTCUTS.indexOf(e.key.toLowerCase());
+  if (idx === -1) return;
+  const note = KB_SCALE[idx];
+  _stopKbNote(note);
+  document.querySelector(`.kb-key[data-note="${note}"]`)?.classList.remove('pressed');
+});
+
+// Inicialización — primero carga timbres.yaml, después arma la UI
+(async () => {
+  await loadTimbres();
+  const availableKeys = Object.keys(TIMBRES);
+  voiceConfig.forEach(cfg => {
+    if (!TIMBRES[cfg.timbre] && availableKeys.length) cfg.timbre = availableKeys[0];
+  });
+  if (!TIMBRES[keyboardTimbre] && availableKeys.length) keyboardTimbre = availableKeys[0];
+  buildGondola();
+  buildInterpPanel();
+  buildKeyboard();
+})();
+</script>
+</body>
+</html>
