@@ -1743,13 +1743,6 @@ const CELLS = [
     ]
   },
 
-  // ─── SILENCIO Σ3: Cola final ───────────────────────────────────────────────
-  // Sin notas. Los músicos llegan desfasados → disolución gradual.
-  // El motor espera 5s más después de que todos sean done (reverb tail).
-  {
-    id: 27, name: '—', region: 'E', chord: '—', group: 'pause-end', beats: 4, isSilence: true,
-    notes: []
-  }
 ];
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -2609,7 +2602,7 @@ function _groupCellsForGondola(cells) {
   return [
     { label: 'Intro',     cells: [...cells.filter(c => c.group === 'intro'),     ...cells.filter(c => c.group === 'pause-intro')] },
     { label: 'Productos', cells: [...cells.filter(c => c.group === 'products-d' || c.group === 'products-e'), ...cells.filter(c => c.group === 'pause-products')] },
-    { label: 'Cierre',    cells: [...cells.filter(c => c.group === 'outro'),     ...cells.filter(c => c.group === 'pause-end')] }
+    { label: 'Cierre',    cells: cells.filter(c => c.group === 'outro') }
   ];
 }
 
