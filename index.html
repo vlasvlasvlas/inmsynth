@@ -725,6 +725,7 @@
       padding: 6px 4px;
     }
     .cell.cell-pause:hover { border-color: var(--border); background: transparent; opacity: 0.6; }
+    .cell.cell-pause.active-mixed { opacity: 0.9; }
     .cell.cell-pause .cell-rest-symbol { font-size: 1.6em; line-height: 1; color: var(--dim); }
     .cell.cell-pause .cell-markers { justify-content: center; }
 
@@ -1740,6 +1741,14 @@ const CELLS = [
       { p: 'D#5', d: '4n', t: 3.0, s: 'dí-' },
       { p: 'E5',  d: '1m', t: 4.0, s: '-a' }
     ]
+  },
+
+  // ─── SILENCIO Σ3: Cola final ───────────────────────────────────────────────
+  // Sin notas. Los músicos llegan desfasados → disolución gradual.
+  // El motor espera 5s más después de que todos sean done (reverb tail).
+  {
+    id: 27, name: '—', region: 'E', chord: '—', group: 'pause-end', beats: 4, isSilence: true,
+    notes: []
   }
 ];
 
@@ -2095,9 +2104,11 @@ async function previewCell(cellId) {
 class BasePlayer {
   constructor() {
     this.running = false;
+    this._tailTimeout = null;
   }
   stop() {
     this.running = false;
+    if (this._tailTimeout) { clearTimeout(this._tailTimeout); this._tailTimeout = null; }
     Tone.Transport.stop();
     Tone.Transport.cancel();
   }
@@ -2558,12 +2569,19 @@ class EnsemblePlayer extends BasePlayer {
       this.globalTick++;
 
       if (this.voices.every(v => v.done)) {
-        this.stop();
-        setStatus('Obra finalizada');
+        this.running = false;
+        setStatus('Obra finalizada · resonando…');
         setTransportBtns(false);
-        clearActiveUI();
-        updateKaraokeHUD('Fin', 'E', 'E', 'Completado');
-        renderActivePositions();
+        updateKaraokeHUD('···', 'E', 'E', 'Resonando');
+        // Esperar cola de reverb (decay 3s) + releases antes del hard stop
+        this._tailTimeout = setTimeout(() => {
+          this._tailTimeout = null;
+          Tone.Transport.stop();
+          Tone.Transport.cancel();
+          clearActiveUI();
+          updateKaraokeHUD('Fin', 'E', 'E', 'Completado');
+          renderActivePositions();
+        }, 5000);
         return;
       }
 
@@ -2593,7 +2611,8 @@ function _groupCellsForGondola(cells) {
     { label: null,        cells: cells.filter(c => c.group === 'pause-intro') },
     { label: 'Productos', cells: cells.filter(c => c.group === 'products-d' || c.group === 'products-e') },
     { label: null,        cells: cells.filter(c => c.group === 'pause-products') },
-    { label: 'Cierre',    cells: cells.filter(c => c.group === 'outro') }
+    { label: 'Cierre',    cells: cells.filter(c => c.group === 'outro') },
+    { label: null,        cells: cells.filter(c => c.group === 'pause-end') }
   ];
 }
 
