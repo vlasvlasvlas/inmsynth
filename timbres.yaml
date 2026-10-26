@@ -198,7 +198,7 @@ timbres:
   - key: moog
     label: Moog Lead
     type: Synth
-    volume: -14
+    volume: -17
     oscillator:
       type: sawtooth
     envelope:
