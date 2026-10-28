@@ -198,11 +198,11 @@ timbres:
   - key: moog
     label: Moog Lead
     type: Synth
-    volume: -22
+    volume: -23
     oscillator:
       type: square
     envelope:
-      attack: 0.02
+      attack: 0.03
       decay: 0.3
       sustain: 0.65
       release: 0.4
@@ -216,7 +216,7 @@ timbres:
       spread: 20
       count: 3
     envelope:
-      attack: 0.2
+      attack: 0.3
       decay: 0.4
       sustain: 0.88
       release: 2.5

@@ -13,6 +13,7 @@ distinta.
 
 - Demo: <https://vlasvlasvlas.github.io/inmsynth/>
 - Repo: <https://github.com/vlasvlasvlas/inmsynth>
+- **Marco Teórico & Metodología:** [`doc/IN_M_marco_teorico_y_metodologia.md`](./doc/IN_M_marco_teorico_y_metodologia.md) (Terry Riley, *In C* y la historia sociocultural del jingle de Marolio)
 
 ---
 
@@ -305,19 +306,34 @@ bassSynth (sub-pad)        ─────────────────�
 
 ---
 
+## Marco Teórico e Investigación Cultural
+
+Para una profundización exhaustiva sobre la fundamentación estética, la historia de los creadores del jingle y la metodología de traducción algorítmica, consultar:
+
+👉 [**IN M · Marco Teórico, Investigación Cultural y Metodología**](./doc/IN_M_marco_teorico_y_metodologia.md)
+
+Puntos clave desarrollados en el documento:
+- **Terry Riley y el sistema *In C* (1964):** Partitura abierta, escucha mutua (*mutual listening*), phasing rítmico, pulso constante y micropolifonía emergente.
+- **Historia y fenomenología del jingle de Marolio (2001):** La gestación en The Sound Studio (Osvaldo Botaya), la composición de los hermanos Gustavo y Alejandro Ridilenir (músicos de Illya Kuryaki, Babasónicos y Dancing Mood), la voz de Andrea Báez y la concepción publicitaria de catálogo literal de Ignacio Tisser.
+- **De spot comercial a mito popular:** El fenómeno sociocultural que trascendió la publicidad (coreado masivo en el Luna Park ante 9.000 personas junto a Ciro y Los Persas, versión metalera de Asspera, memes y memoria colectiva).
+- **Desplazamiento funcional:** La transmutación de la repetición publicitaria (diseñada para el consumo) en repetición minimalista contemplativa.
+
+---
+
 ## Estructura del proyecto
 
 ```
 inmsynth/
-├── index.html              # app completa (HTML + CSS + JS inline)
-├── timbres.yaml            # catálogo de timbres editable
-├── README.md               # este archivo
-├── LICENSE                 # CC BY-SA 4.0
+├── index.html                           # app completa (HTML + CSS + JS inline)
+├── timbres.yaml                         # catálogo de timbres editable
+├── README.md                            # este archivo
+├── LICENSE                              # CC BY-SA 4.0
 └── doc/
-    ├── partitura.png                        # partitura original escaneada
-    ├── IN_M_transcripcion_partitura.md      # transcripción nota a nota
-    ├── IN_M_analisis_v1.md                  # análisis musical v1
-    └── IN_M_analisis_v2.md                  # análisis musical v2
+    ├── partitura.png                    # partitura original escaneada
+    ├── IN_M_marco_teorico_y_metodologia.md # marco teórico, investigación cultural y metodología
+    ├── IN_M_transcripcion_partitura.md  # transcripción nota a nota
+    ├── IN_M_analisis_v1.md              # análisis musical v1
+    └── IN_M_analisis_v2.md              # análisis musical v2
 ```
 
 Sin build step, sin dependencias que instalar. Dependencias externas por CDN:
