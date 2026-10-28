@@ -186,7 +186,10 @@ vida al ensamble:
 Mientras repite una célula, cada voz aplica (si *Variación* está activa):
 
 - *Swell de velocity* a lo largo de la permanencia (fade in – pico – fade out).
-- *Octava ocasional* ±1 (~8%, sólo en reps avanzadas).
+- *Saltos de octava por frase completa:*
+  - Una octava abajo (`8vb`, ~25%): aporta contrapunto, calidez y cuerpo de bajo durante 1–2 repeticiones.
+  - Una octava arriba (`8va`, ~9%): reservada para patrones de registro medio/grave (octava ≤ 4) y con velocity atenuada para dar brillo y campana sin estridencia ni saturar el oído.
+  - Las cards de los músicos muestran el indicador `8vb` o `8va` en tiempo real mientras suena.
 - *Dropout* muy raro (~5%) — una nota se omite para dar aire.
 
 ### Dinámica por arco de obra

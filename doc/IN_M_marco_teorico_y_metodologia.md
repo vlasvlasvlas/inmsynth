@@ -119,6 +119,10 @@ Cada intérprete evalúa en cada final de ciclo las siguientes reglas algorítmi
    * 3 voces activas simultáneas: factor de ganancia a $0.80\times$ (textura calma).
    * 2 voces activas: factor a $0.95\times$.
    * 1 voz solista (las otras descansan): ganancia elevada a $1.12\times$ para sostener el espacio sonoro.
+7. **Variación de registro por octavación de frase:**
+   En consonancia con las directivas originales de *In C* (donde Terry Riley prescribe que los patrones pueden ejecutarse una octava arriba o abajo para dar cuerpo y variedad polifónica), el ensamble alterna de registro orgánicamente:
+   * **Octava baja (`8vb`, ~25%):** actúa como bajo o contracanto cálido durante 1 o 2 ciclos completos del patrón.
+   * **Octava alta (`8va`, ~9%):** limitada exclusivamente a células de registro medio/grave (octava $\le 4$) y con ganancia atenuada para aportar brillo y aire sin estridencia ni saturación auditiva.
 
 ### 4.3. Motor de Audio y Síntesis Procedural Pura
 A diferencia de los enfoques comerciales basados en inteligencia artificial de caja negra (text-to-audio) o en el disparo de samples pregrabados de audio digital, *IN M* utiliza **síntesis procedural pura calculada en tiempo real** mediante la Web Audio API y la librería Tone.js:

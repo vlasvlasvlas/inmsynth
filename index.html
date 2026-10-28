@@ -2143,6 +2143,7 @@ class EnsemblePlayer extends BasePlayer {
         wantsAdvance: false, isHeld: false, isResting: false, restTicksLeft: 0,
         enterAt: 0, tickOffset: 0, patienceOffset: 3,
         continuousTicks: 0, lastBreathTick: 0,
+        octaveShift: 0, octaveRepsLeft: 0,
         statusMsg: 'Iniciando'
       },
       {
@@ -2151,6 +2152,7 @@ class EnsemblePlayer extends BasePlayer {
         wantsAdvance: false, isHeld: false, isResting: false, restTicksLeft: 0,
         enterAt: 16, tickOffset: 1, patienceOffset: 0,
         continuousTicks: 0, lastBreathTick: 0,
+        octaveShift: 0, octaveRepsLeft: 0,
         statusMsg: 'En espera'
       },
       {
@@ -2159,6 +2161,7 @@ class EnsemblePlayer extends BasePlayer {
         wantsAdvance: false, isHeld: false, isResting: false, restTicksLeft: 0,
         enterAt: 32, tickOffset: 2, patienceOffset: -2,
         continuousTicks: 0, lastBreathTick: 0,
+        octaveShift: 0, octaveRepsLeft: 0,
         statusMsg: 'En espera'
       }
     ];
@@ -2204,6 +2207,8 @@ class EnsemblePlayer extends BasePlayer {
     v.isResting = true;
     v.restTicksLeft = this.ticksPerBar * 2;
     v.statusMsg = 'Respirando';
+    v.octaveShift = 0;
+    v.octaveRepsLeft = 0;
     renderActivePositions();
   }
 
@@ -2246,9 +2251,16 @@ class EnsemblePlayer extends BasePlayer {
       velocity *= swell;
     }
 
-    // Octava ocasional (reps avanzadas, baja probabilidad)
-    if (over >= 2 && Math.random() < 0.08) {
-      pitch = this._transposeOctave(pitch, Math.random() < 0.65 ? 1 : -1);
+    // Variación de octava coherente por patrón/frase completa:
+    if (v.octaveShift) {
+      pitch = this._transposeOctave(pitch, v.octaveShift);
+      if (v.octaveShift > 0) {
+        // Octava alta: atenuada para sumar aire/campana sin estridencia ni aturdir
+        velocity *= 0.78;
+      } else if (v.octaveShift < 0) {
+        // Octava baja: leve realce para otorgar presencia y calidez al bajo
+        velocity *= 1.06;
+      }
     }
 
     // Dropout muy raro: omite nota (velocity 0)
@@ -2259,10 +2271,56 @@ class EnsemblePlayer extends BasePlayer {
     return { pitch, duration, velocity };
   }
 
+  // Actualiza la octava de la frase/patrón completo para una voz (evaluado al inicio de ciclo).
+  _updateVoiceOctave(v, cell) {
+    if (!allowVariation || v.isResting || v.done) {
+      v.octaveShift = 0;
+      v.octaveRepsLeft = 0;
+      return;
+    }
+
+    // Lead-in (primeras 2 reps): siempre en la octava nominal de la partitura
+    // para que la nueva frase se presente clara y reconocible.
+    if (v.reps < 2) {
+      v.octaveShift = 0;
+      v.octaveRepsLeft = 0;
+      return;
+    }
+
+    // Si aún le quedan repeticiones en este bloque de octava, las consume
+    if (v.octaveRepsLeft > 0) {
+      v.octaveRepsLeft--;
+      return;
+    }
+
+    // Comprobamos si la célula original ya tiene notas en registro alto (octava >= 5).
+    // Si ya es alta (D5, E5, G5, etc.), evitamos subir a octava 6 para que no aturda.
+    const hasHighNotes = cell.notes && cell.notes.some(n => {
+      const m = n.p && n.p.match(/\d$/);
+      return m && parseInt(m[0], 10) >= 5;
+    });
+
+    // Distribución musical de saltos de octava:
+    // ~25%: Octava abajo (-1) -> agrega calidez, contrapunto y bajo (muy musical y descansado)
+    // ~9%:  Octava arriba (+1) -> solo en patrones graves/medios (<= 4) y atenuada
+    // ~66%: Octava original de partitura (0)
+    const roll = Math.random();
+    if (roll < 0.25) {
+      v.octaveShift = -1;
+      v.octaveRepsLeft = 1 + Math.floor(Math.random() * 2); // 1 a 2 reps en octava baja
+    } else if (roll < 0.34 && !hasHighNotes) {
+      v.octaveShift = 1;
+      v.octaveRepsLeft = 1; // 1 rep puntual en octava alta suave
+    } else {
+      v.octaveShift = 0;
+      v.octaveRepsLeft = 2 + Math.floor(Math.random() * 3); // 2 a 4 reps en octava natural
+    }
+  }
+
   _transposeOctave(pitch, delta) {
     const m = pitch.match(/^([A-G]#?)(\d)$/);
     if (!m) return pitch;
-    const oct = Math.max(2, Math.min(6, parseInt(m[2], 10) + delta));
+    const oct = Math.max(2, Math.min(5, parseInt(m[2], 10) + delta));
     return `${m[1]}${oct}`;
   }
 
@@ -2401,6 +2459,8 @@ class EnsemblePlayer extends BasePlayer {
       v.restTicksLeft = 0;
       v.continuousTicks = 0;
       v.lastBreathTick = 0;
+      v.octaveShift = 0;
+      v.octaveRepsLeft = 0;
       v.statusMsg = i === 0 ? 'Entrando' : 'En espera';
     });
 
@@ -2441,9 +2501,16 @@ class EnsemblePlayer extends BasePlayer {
           v.tick = 0;
           v.reps = 0;
           v.wantsAdvance = false;
+          v.octaveShift = 0;
+          v.octaveRepsLeft = 0;
           v.statusMsg = 'Avanzó';
           this._registerAdvance(v);
           return;
+        }
+
+        // Al inicio de cada ciclo de la célula (tick 0), actualiza la octava de la frase
+        if (v.tick === 0) {
+          this._updateVoiceOctave(v, cell);
         }
 
         this._emitNote(v, cell, time, cellList);
@@ -2466,6 +2533,8 @@ class EnsemblePlayer extends BasePlayer {
             v.isResting = true;
             v.restTicksLeft = this.ticksPerBar * (2 + Math.floor(Math.random() * 3)); // 2–4 compases
             v.statusMsg = 'Respirando';
+            v.octaveShift = 0;
+            v.octaveRepsLeft = 0;
             return;
           }
 
@@ -2511,6 +2580,8 @@ class EnsemblePlayer extends BasePlayer {
           if (advance) {
             v.cellIdx++;
             v.reps = 0;
+            v.octaveShift = 0;
+            v.octaveRepsLeft = 0;
             if (v.cellIdx >= cellList.length) {
               v.done = true;
               v.statusMsg = 'Concluido';
@@ -2834,7 +2905,11 @@ function renderActivePositions() {
     const c = cellList[v.cellIdx];
     if (icName) icName.textContent = `${c.id}. ${c.name}`;
     if (icChord) icChord.textContent = c.chord;
-    if (icRep) icRep.textContent = `rep ${v.reps} / ${targetPatience}`;
+    if (icRep) {
+      const octBadge = (allowVariation && v.octaveShift === -1) ? ' · 8vb' :
+                       (allowVariation && v.octaveShift === 1) ? ' · 8va' : '';
+      icRep.textContent = `rep ${v.reps} / ${targetPatience}${octBadge}`;
+    }
     if (icReg) icReg.textContent = c.region === 'E' ? 'Mi' : 'Re';
 
     if (repFill) {
@@ -3006,6 +3081,13 @@ document.getElementById('chkBreaths').addEventListener('change', e => {
 
 document.getElementById('chkVariation').addEventListener('change', e => {
   allowVariation = e.target.checked;
+  if (!allowVariation && player && player.voices) {
+    player.voices.forEach(v => {
+      v.octaveShift = 0;
+      v.octaveRepsLeft = 0;
+    });
+    renderActivePositions();
+  }
 });
 
 document.getElementById('volInput').addEventListener('input', e => {
