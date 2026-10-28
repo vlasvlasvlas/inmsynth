@@ -142,7 +142,7 @@ La interfaz traduce visualmente el principio musical de *In C*: la superposició
 
 *IN M* no opera como parodia ni como nostalgia kitsch, sino como un **ejercicio de arqueología de los medios y desvío deconstructivo**. 
 
-Al desacelerar, expandir y abrir el jingle publicitario de Marolio bajo los mecanismos de Terry Riley, el proyecto libera a la melodía de su mandato mercantil. Despojada de la obligación de vender, la partitura revela su belleza interna: una oda a los elementos básicos del sustento cotidiano (el mate, la harina, el tomate, las lentejas) entrelazados en un mantra minimalista, fractal y colectivo que resuena en la memoria viva de toda una sociedad.
+Al desacelerar, expandir y abrir el jingle publicitario de Marolio bajo los mecanismos de Terry Riley, el proyecto desplaza a la melodía de su función mercantil original. Despojada de la urgencia de vender, la pieza deja al descubierto su lógica constructiva: una letanía de productos cotidianos convertida en pura materia rítmico-melódica, articulada a través de un sistema algorítmico que dialoga con la memoria sonora compartida.
 
 ---
 
