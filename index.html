@@ -914,10 +914,18 @@
 
     .interp-actions {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 6px;
       align-items: center;
       margin-top: 2px;
+    }
+
+    /* Variante del .btn-row activo cuando el canal está muteado: tono rojizo
+       para que se distinga del "Pausar" / "Manual" (que usan accent-soft neutro). */
+    .btn-row.muted {
+      color: var(--white);
+      border-color: #c0392b;
+      background: rgba(192, 57, 43, 0.18);
     }
 
     /* Todos los botones del músico comparten base para que se lean como un set */
@@ -1877,20 +1885,20 @@ timbres:
   - { key: pluck,            label: Pluck,                type: Synth,   volume: -10, oscillator: { type: triangle }, envelope: { attack: 0.002, decay: 0.35, sustain: 0.0, release: 0.4 } }
   - { key: pad,              label: Pad,                  type: Synth,   volume: -11, oscillator: { type: fatsine, spread: 22, count: 3 }, envelope: { attack: 0.4, decay: 0.4, sustain: 0.85, release: 1.4 } }
   - { key: bell,             label: Campana,              type: FMSynth, volume: -13, harmonicity: 3.01, modulationIndex: 4.2, oscillator: { type: sine }, envelope: { attack: 0.001, decay: 1.4, sustain: 0.0, release: 1.2 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.4, sustain: 0.0, release: 0.4 } }
-  - { key: clarinet,         label: Clarinete,            type: Synth,   volume: -11, oscillator: { type: triangle }, envelope: { attack: 0.09, decay: 0.15, sustain: 0.75, release: 0.6 } }
+  - { key: clarinet,         label: Clarinete,            type: Synth,   volume: -11, oscillator: { type: fattriangle, spread: 10, count: 2 }, envelope: { attack: 0.14, decay: 0.18, sustain: 0.6, release: 0.7 } }
   - { key: flute,            label: Flauta,               type: Synth,   volume: -10, oscillator: { type: sine }, envelope: { attack: 0.14, decay: 0.1, sustain: 0.85, release: 0.7 } }
-  - { key: pulse,            label: Pulse,                type: Synth,   volume: -13, oscillator: { type: pulse, width: 0.32 }, envelope: { attack: 0.005, decay: 0.18, sustain: 0.35, release: 0.3 } }
+  - { key: pulse,            label: Pulse,                type: Synth,   volume: -14, oscillator: { type: pulse, width: 0.45 }, envelope: { attack: 0.025, decay: 0.2, sustain: 0.3, release: 0.4 } }
   - { key: saw,              label: Saw suave,            type: Synth,   volume: -14, oscillator: { type: fatsawtooth, spread: 14, count: 2 }, envelope: { attack: 0.03, decay: 0.22, sustain: 0.55, release: 0.5 } }
   - { key: marimba,          label: Marimba,              type: FMSynth, volume: -11, harmonicity: 4.0, modulationIndex: 1.6, oscillator: { type: sine }, envelope: { attack: 0.001, decay: 0.45, sustain: 0.0, release: 0.4 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.35, sustain: 0.0, release: 0.3 } }
   - { key: rhodes,           label: Rhodes EP,            type: FMSynth, volume: -11, harmonicity: 5, modulationIndex: 2.5, oscillator: { type: sine }, envelope: { attack: 0.002, decay: 1.2, sustain: 0.4, release: 1.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.6, sustain: 0.0, release: 0.4 } }
   - { key: dx7,              label: DX7 EPiano,           type: FMSynth, volume: -11, harmonicity: 2, modulationIndex: 10, oscillator: { type: sine }, envelope: { attack: 0.001, decay: 0.9, sustain: 0.5, release: 1.0 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.001, decay: 0.7, sustain: 0.0, release: 0.5 } }
-  - { key: moog,             label: Moog Lead,            type: Synth,   volume: -17, oscillator: { type: square }, envelope: { attack: 0.02, decay: 0.3, sustain: 0.65, release: 0.4 } }
+  - { key: moog,             label: Moog Lead,            type: Synth,   volume: -16, oscillator: { type: square }, envelope: { attack: 0.09, decay: 0.3, sustain: 0.65, release: 0.5 } }
   - { key: juno,             label: Juno Pad,             type: Synth,   volume: -17, oscillator: { type: fatsawtooth, spread: 20, count: 3 }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.88, release: 2.5 } }
-  - { key: tb303,            label: TB-303 Acid,          type: AMSynth, volume: -15, harmonicity: 0.5, oscillator: { type: sawtooth }, envelope: { attack: 0.001, decay: 0.15, sustain: 0.3, release: 0.2 }, modulation: { type: sawtooth }, modulationEnvelope: { attack: 0.001, decay: 0.12, sustain: 0.1, release: 0.15 } }
+  - { key: tb303,            label: TB-303 Acid,          type: AMSynth, volume: -11, harmonicity: 0.5, oscillator: { type: sawtooth }, envelope: { attack: 0.001, decay: 0.15, sustain: 0.3, release: 0.2 }, modulation: { type: sawtooth }, modulationEnvelope: { attack: 0.001, decay: 0.12, sustain: 0.1, release: 0.15 } }
   - { key: arp,              label: ARP Strings,          type: FMSynth, volume: -16, harmonicity: 3.5, modulationIndex: 2.5, oscillator: { type: triangle }, envelope: { attack: 1.2, decay: 0.5, sustain: 0.9, release: 3.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 1.0, decay: 0.5, sustain: 0.8, release: 2.5 } }
   - { key: strings_ensemble, label: "Cuerdas (ensemble)", type: Synth,   volume: -15, oscillator: { type: fatsawtooth, spread: 24, count: 4 }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.9, release: 2.5 } }
   - { key: cello,            label: Cello,                type: AMSynth, volume: -12, harmonicity: 1, oscillator: { type: sawtooth }, envelope: { attack: 0.12, decay: 0.25, sustain: 0.85, release: 1.8 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.1, decay: 0.3, sustain: 0.6, release: 1.2 } }
-  - { key: violin_pad,       label: "Violín (pad)",       type: FMSynth, volume: -14, harmonicity: 2.5, modulationIndex: 1.8, oscillator: { type: triangle }, envelope: { attack: 0.25, decay: 0.3, sustain: 0.9, release: 3.0 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.2, decay: 0.4, sustain: 0.8, release: 2.0 } }
+  - { key: violin_pad,       label: "Violín (pad)",       type: FMSynth, volume: -14, harmonicity: 2.5, modulationIndex: 1.8, oscillator: { type: triangle }, envelope: { attack: 0.12, decay: 0.25, sustain: 0.9, release: 2.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.1, decay: 0.3, sustain: 0.8, release: 1.8 } }
   - { key: glass_strings,    label: "Cuerdas cristal",    type: FMSynth, volume: -14, harmonicity: 4.0, modulationIndex: 0.8, oscillator: { type: sine }, envelope: { attack: 0.3, decay: 0.4, sustain: 0.85, release: 3.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.25, decay: 0.4, sustain: 0.7, release: 2.5 } }
 `;
 
@@ -1951,6 +1959,7 @@ let masterLimiter, masterReverb, masterVolumeNode, masterDelay;
 let leadSynth, chordSynth, bassSynth, pulseSynth;
 let voiceSynths = [];
 let voicePanners = [];
+let voiceMutes = [];  // Volume por voz para mute independiente (botón en la card)
 let voicesBus = null; // bus de ganancia para las voces del ensemble (Auto/Humano)
 let songBus = null;   // bus de ganancia para el modo Canción (lead + chord + bass)
 
@@ -2032,7 +2041,10 @@ async function initAudioEngine() {
   // más capas simultáneas (lead + chord + bass + pulso) y queda más loud que
   // Auto/Humano que sólo tiene 3 voces + pulso.
   voicesBus = new Tone.Volume(5).connect(masterDelay);
-  voicePanners = voiceConfig.map(c => new Tone.Panner(c.pan).connect(voicesBus));
+  // Mute por voz (intermedio): synth → panner → mute → voicesBus. Permite silenciar
+  // una voz desde la UI sin tocar su timbre ni interrumpir la posición en la obra.
+  voiceMutes = voiceConfig.map(() => new Tone.Volume(0).connect(voicesBus));
+  voicePanners = voiceConfig.map((c, i) => new Tone.Panner(c.pan).connect(voiceMutes[i]));
 
   // Construir sintetizadores con el timbre configurado (16 voces: margen para overlaps de release
   // en timbres orquestales con attack/release largos — strings_ensemble, violin_pad, glass_strings).
@@ -2773,6 +2785,10 @@ function buildInterpPanel() {
         <span id="ireg-v${mid}">—</span>
       </div>
       <div class="interp-actions">
+        <button class="btn-row" id="btn-mute-${mid}"
+          title="Mute del canal: silencia esta voz sin pausarla ni cambiar su posición en la obra. Volvé a clickear para reactivar.">
+          <span>Mute</span>
+        </button>
         <button class="btn-row ${isManual ? 'active' : ''}" id="btn-mode-${mid}"
           title="Modo del músico. Auto: el algoritmo decide los avances. Manual: sólo avanza cuando apretás Avanzar.">
           <span>${isManual ? 'Manual' : 'Auto'}</span>
@@ -2816,6 +2832,13 @@ function buildInterpPanel() {
 
     document.getElementById(`btn-breath-${mid}`).addEventListener('click', () => {
       if (player && typeof player.triggerBreath === 'function') player.triggerBreath(mid);
+    });
+
+    document.getElementById(`btn-mute-${mid}`).addEventListener('click', () => {
+      const mutedNode = voiceMutes[mid];
+      if (!mutedNode) return;
+      mutedNode.mute = !mutedNode.mute;
+      document.getElementById(`btn-mute-${mid}`).classList.toggle('muted', mutedNode.mute);
     });
   });
 }

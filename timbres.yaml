@@ -84,12 +84,14 @@ timbres:
     type: Synth
     volume: -11
     oscillator:
-      type: triangle
+      type: fattriangle
+      spread: 10
+      count: 2
     envelope:
-      attack: 0.09
-      decay: 0.15
-      sustain: 0.75
-      release: 0.6
+      attack: 0.14
+      decay: 0.18
+      sustain: 0.6
+      release: 0.7
 
   - key: flute
     label: Flauta
@@ -106,15 +108,15 @@ timbres:
   - key: pulse
     label: Pulse
     type: Synth
-    volume: -13
+    volume: -14
     oscillator:
       type: pulse
-      width: 0.32
+      width: 0.45
     envelope:
-      attack: 0.005
-      decay: 0.18
-      sustain: 0.35
-      release: 0.3
+      attack: 0.025
+      decay: 0.2
+      sustain: 0.3
+      release: 0.4
 
   - key: saw
     label: Saw suave
@@ -198,14 +200,14 @@ timbres:
   - key: moog
     label: Moog Lead
     type: Synth
-    volume: -17
+    volume: -16
     oscillator:
       type: square
     envelope:
-      attack: 0.03
+      attack: 0.09
       decay: 0.3
       sustain: 0.65
-      release: 0.4
+      release: 0.5
 
   - key: juno
     label: Juno Pad
@@ -216,7 +218,7 @@ timbres:
       spread: 20
       count: 3
     envelope:
-      attack: 0.3
+      attack: 0.2
       decay: 0.4
       sustain: 0.88
       release: 2.5
@@ -224,7 +226,7 @@ timbres:
   - key: tb303
     label: TB-303 Acid
     type: AMSynth
-    volume: -15
+    volume: -11
     harmonicity: 0.5
     oscillator:
       type: sawtooth
@@ -311,17 +313,17 @@ timbres:
     oscillator:
       type: triangle
     envelope:
-      attack: 0.25
-      decay: 0.3
+      attack: 0.12
+      decay: 0.25
       sustain: 0.9
-      release: 3.0
+      release: 2.5
     modulation:
       type: sine
     modulationEnvelope:
-      attack: 0.2
-      decay: 0.4
+      attack: 0.1
+      decay: 0.3
       sustain: 0.8
-      release: 2.0
+      release: 1.8
 
   - key: glass_strings
     label: Cuerdas cristal
