@@ -262,4 +262,85 @@ timbres:
       sustain: 0.8
       release: 2.5
 
+  # ─── Cuerdas suaves / orquesta ────────────────────────────────────────────
+  # Attacks lentos (0.9–1.8 s) y releases largos (2–4 s).
+  # Nota: estos timbres aprovechan maxPolyphony 16 en buildVoiceSynth; con
+  # ciclos cortos de corchea y release > 2.5 s, las voces se solapan.
+
+  - key: strings_ensemble
+    label: Cuerdas (ensemble)
+    type: Synth
+    volume: -16
+    oscillator:
+      type: fatsawtooth
+      spread: 24
+      count: 4
+    envelope:
+      attack: 1.4
+      decay: 0.6
+      sustain: 0.9
+      release: 3.0
+
+  - key: cello
+    label: Cello
+    type: AMSynth
+    volume: -14
+    harmonicity: 1
+    oscillator:
+      type: sawtooth
+    envelope:
+      attack: 0.9
+      decay: 0.35
+      sustain: 0.85
+      release: 2.2
+    modulation:
+      type: sine
+    modulationEnvelope:
+      attack: 0.6
+      decay: 0.4
+      sustain: 0.6
+      release: 1.8
+
+  - key: violin_pad
+    label: Violín (pad)
+    type: FMSynth
+    volume: -18
+    harmonicity: 2.5
+    modulationIndex: 1.8
+    oscillator:
+      type: triangle
+    envelope:
+      attack: 1.2
+      decay: 0.4
+      sustain: 0.9
+      release: 3.5
+    modulation:
+      type: sine
+    modulationEnvelope:
+      attack: 1.0
+      decay: 0.5
+      sustain: 0.8
+      release: 2.5
+
+  - key: glass_strings
+    label: Cuerdas cristal
+    type: FMSynth
+    volume: -20
+    harmonicity: 4.0
+    modulationIndex: 0.8
+    oscillator:
+      type: sine
+    envelope:
+      attack: 1.8
+      decay: 0.5
+      sustain: 0.85
+      release: 4.0
+    modulation:
+      type: sine
+    modulationEnvelope:
+      attack: 1.5
+      decay: 0.5
+      sustain: 0.7
+      release: 3.0
+
   # ─── Agregá nuevos timbres debajo siguiendo el mismo formato ─────────────

@@ -1635,13 +1635,13 @@ const CELLS = [
     id: 19, name: 'Choclo', region: 'E', chord: 'A', group: 'products-e', beats: 2,
     notes: [
       { p: 'C#5', d: '8n', t: 0.0, s: 'Cho-' },
-      { p: 'C#5', d: '8n', t: 0.5, s: '-clo y' }
+      { p: 'C#5', d: '8n', t: 0.5, s: '-clo' }
     ]
   },
   {
     id: 20, name: 'Lentejas', region: 'E', chord: 'B', group: 'products-e', beats: 4,
     notes: [
-      { p: 'C#5', d: '8n',  t: 0.0, s: 'Len-' },
+      { p: 'C#5', d: '8n',  t: 0.0, s: 'yLen-' },
       { p: 'D#5', d: '4n',  t: 0.5, s: '-te-' },
       { p: 'B4',  d: '4n.', t: 1.5, s: '-jas' }
     ]
@@ -1781,8 +1781,8 @@ const SONG_MELODY = [
   { time: 45.5, pitch: 'E5', dur: '8n', text: 'y A-', cellId: 18, measure: 12 },
   { time: 46.0, pitch: 'D#5', dur: '2n', text: '-tún', cellId: 18, measure: 12 },
   { time: 48.0, pitch: 'C#5', dur: '8n', text: 'Cho-', cellId: 19, measure: 12 },
-  { time: 48.5, pitch: 'C#5', dur: '8n', text: '-clo y', cellId: 19, measure: 13 },
-  { time: 49.0, pitch: 'C#5', dur: '8n', text: 'Len-', cellId: 20, measure: 13 },
+  { time: 48.5, pitch: 'C#5', dur: '8n', text: '-clo', cellId: 19, measure: 13 },
+  { time: 49.0, pitch: 'C#5', dur: '8n', text: 'yLen-', cellId: 20, measure: 13 },
   { time: 49.5, pitch: 'D#5', dur: '4n', text: '-te-', cellId: 20, measure: 13 },
   { time: 50.5, pitch: 'B4', dur: '4n.', text: '-jas', cellId: 20, measure: 13 },
   { time: 52.0, pitch: 'E4', dur: '8n', text: 'Ma-', cellId: 21, measure: 13 },
@@ -1870,7 +1870,8 @@ let cellFilter = 'all';
 // ─── Timbres ───
 // TIMBRES se arma dinámicamente desde `timbres.yaml` al cargar la página.
 // Si el fetch falla (p. ej. index.html abierto con file://), se usa este fallback
-// embebido con 8 presets originales. Para editar/sumar sonidos, modificá timbres.yaml.
+// embebido con los 18 presets completos (8 originales + 6 clásicos + 4 cuerdas orquestales).
+// Para editar/sumar sonidos, modificá timbres.yaml.
 const DEFAULT_TIMBRES_YAML = `
 timbres:
   - { key: pluck,    label: Pluck,       type: Synth,   volume: -9,  oscillator: { type: triangle }, envelope: { attack: 0.002, decay: 0.35, sustain: 0.0, release: 0.4 } }
@@ -1886,7 +1887,11 @@ timbres:
   - { key: moog,     label: Moog Lead,   type: Synth,   volume: -22, oscillator: { type: square }, envelope: { attack: 0.02, decay: 0.3, sustain: 0.65, release: 0.4 } }
   - { key: juno,     label: Juno Pad,    type: Synth,   volume: -21, oscillator: { type: fatsawtooth, spread: 20, count: 3 }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.88, release: 2.5 } }
   - { key: tb303,    label: TB-303 Acid, type: AMSynth, volume: -18, harmonicity: 0.5, oscillator: { type: sawtooth }, envelope: { attack: 0.001, decay: 0.15, sustain: 0.3, release: 0.2 }, modulation: { type: sawtooth }, modulationEnvelope: { attack: 0.001, decay: 0.12, sustain: 0.1, release: 0.15 } }
-  - { key: arp,      label: ARP Strings, type: FMSynth, volume: -20, harmonicity: 3.5, modulationIndex: 2.5, oscillator: { type: triangle }, envelope: { attack: 1.2, decay: 0.5, sustain: 0.9, release: 3.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 1.0, decay: 0.5, sustain: 0.8, release: 2.5 } }
+  - { key: arp,              label: ARP Strings,          type: FMSynth, volume: -20, harmonicity: 3.5, modulationIndex: 2.5, oscillator: { type: triangle }, envelope: { attack: 1.2, decay: 0.5, sustain: 0.9, release: 3.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 1.0, decay: 0.5, sustain: 0.8, release: 2.5 } }
+  - { key: strings_ensemble, label: "Cuerdas (ensemble)", type: Synth,   volume: -16, oscillator: { type: fatsawtooth, spread: 24, count: 4 }, envelope: { attack: 1.4, decay: 0.6, sustain: 0.9, release: 3.0 } }
+  - { key: cello,            label: Cello,                type: AMSynth, volume: -14, harmonicity: 1, oscillator: { type: sawtooth }, envelope: { attack: 0.9, decay: 0.35, sustain: 0.85, release: 2.2 }, modulation: { type: sine }, modulationEnvelope: { attack: 0.6, decay: 0.4, sustain: 0.6, release: 1.8 } }
+  - { key: violin_pad,       label: "Violín (pad)",       type: FMSynth, volume: -18, harmonicity: 2.5, modulationIndex: 1.8, oscillator: { type: triangle }, envelope: { attack: 1.2, decay: 0.4, sustain: 0.9, release: 3.5 }, modulation: { type: sine }, modulationEnvelope: { attack: 1.0, decay: 0.5, sustain: 0.8, release: 2.5 } }
+  - { key: glass_strings,    label: "Cuerdas cristal",    type: FMSynth, volume: -20, harmonicity: 4.0, modulationIndex: 0.8, oscillator: { type: sine }, envelope: { attack: 1.8, decay: 0.5, sustain: 0.85, release: 4.0 }, modulation: { type: sine }, modulationEnvelope: { attack: 1.5, decay: 0.5, sustain: 0.7, release: 3.0 } }
 `;
 
 let TIMBRES = {}; // mapa key → { label, build(), vol }
@@ -2006,10 +2011,12 @@ async function initAudioEngine() {
 
   // Bajo · sub-pad continuo (colchón sostenido). FatSine con sustain alto
   // + release largo → las notas se superponen y mantienen el colchón grave vivo.
+  // Va directo a masterVolumeNode (sin delay ni reverb) para preservar la claridad
+  // y el ataque del grave; los FX ensucian el sub-pad y restan definición.
   bassSynth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'fatsine', spread: 12, count: 2 },
     envelope: { attack: 0.25, decay: 0.4, sustain: 0.95, release: 2.5 }
-  }).connect(songBus);
+  }).connect(masterVolumeNode);
   bassSynth.volume.value = -12;
 
   // Pulso (sutil, va al reverb directo)
@@ -2027,9 +2034,10 @@ async function initAudioEngine() {
   voicesBus = new Tone.Volume(5).connect(masterDelay);
   voicePanners = voiceConfig.map(c => new Tone.Panner(c.pan).connect(voicesBus));
 
-  // Construir sintetizadores con el timbre configurado (12 voces: margen para overlaps de release)
+  // Construir sintetizadores con el timbre configurado (16 voces: margen para overlaps de release
+  // en timbres orquestales con attack/release largos — strings_ensemble, violin_pad, glass_strings).
   voiceSynths = voiceConfig.map((c, i) => {
-    const s = buildVoiceSynth(c.timbre, 12);
+    const s = buildVoiceSynth(c.timbre, 16);
     s.connect(voicePanners[i]);
     return s;
   });
@@ -2494,18 +2502,28 @@ class EnsemblePlayer extends BasePlayer {
 
         // Avance manual cuantizado al próximo beat (negra): si el user pidió Avanzar
         // y estamos en el inicio de un beat (cada 2 corcheas), salta ya sin esperar
-        // al final del ciclo entero de la célula.
-        if (v.wantsAdvance && !v.isHeld && v.cellIdx < cellList.length - 1 &&
-            (this.globalTick % 2 === 0)) {
-          v.cellIdx++;
-          v.tick = 0;
-          v.reps = 0;
-          v.wantsAdvance = false;
-          v.octaveShift = 0;
-          v.octaveRepsLeft = 0;
-          v.statusMsg = 'Avanzó';
-          this._registerAdvance(v);
-          return;
+        // al final del ciclo entero de la célula. En la última célula (modo manual),
+        // el mismo gesto concluye la voz al próximo beat — antes requería esperar
+        // al cierre del ciclo entero, lo que daba sensación de "no responde al 1/2/3".
+        if (v.wantsAdvance && !v.isHeld && (this.globalTick % 2 === 0)) {
+          if (v.cellIdx < cellList.length - 1) {
+            v.cellIdx++;
+            v.tick = 0;
+            v.reps = 0;
+            v.wantsAdvance = false;
+            v.octaveShift = 0;
+            v.octaveRepsLeft = 0;
+            v.statusMsg = 'Avanzó';
+            this._registerAdvance(v);
+            return;
+          } else if (v.mode === 'manual') {
+            v.done = true;
+            v.wantsAdvance = false;
+            v.octaveShift = 0;
+            v.octaveRepsLeft = 0;
+            v.statusMsg = 'Concluido';
+            return;
+          }
         }
 
         // Al inicio de cada ciclo de la célula (tick 0), actualiza la octava de la frase
@@ -3113,8 +3131,12 @@ document.getElementById('delayInput').addEventListener('input', e => {
 });
 
 // Delay time (división rítmica relativa al tempo del Transport)
+// Tone.Signal#value espera un número en segundos; para notaciones como "4n"/"8n"
+// hay que convertir vía Tone.Time (usa el BPM actual del Transport).
 document.getElementById('delayTimeSelect').addEventListener('change', e => {
-  if (masterDelay) masterDelay.delayTime.value = e.target.value;
+  if (masterDelay) {
+    masterDelay.delayTime.value = Tone.Time(e.target.value).toSeconds();
+  }
 });
 
 // Control por Teclado

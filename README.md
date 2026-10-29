@@ -28,8 +28,8 @@ python3 -m http.server 8000
 # http://localhost:8000
 ```
 
-Si lo abrís con `file://` igual funciona, pero cae al fallback embebido de
-8 timbres (sin los 6 clásicos adicionales del YAML).
+Si lo abrís con `file://` igual funciona: cae al fallback embebido con los
+18 timbres completos (misma paleta que el YAML).
 
 ---
 
@@ -263,7 +263,7 @@ timbres:
       release: 1.0
 ```
 
-### Timbres incluidos de fábrica (14)
+### Timbres incluidos de fábrica (18)
 
 | key | Label | Carácter |
 |---|---|---|
@@ -281,14 +281,18 @@ timbres:
 | `juno` | Juno Pad | Fattriangle 4-voice detuned — calor chorus Juno |
 | `tb303` | TB-303 Acid | AMSynth saw, harmonicity 0.5 — sub-armónica de bajo acid |
 | `arp` | ARP Strings | FMSynth triangle — cuerdas ensemble con swell lento |
+| `strings_ensemble` | Cuerdas (ensemble) | Fatsawtooth 4-voice, attack 1.4s — pad orquestal tutti |
+| `cello` | Cello | AMSynth sawtooth, h 1.0 — cuerpo medio-grave con bow lento |
+| `violin_pad` | Violín (pad) | FMSynth triangle, h 2.5 — brillo aéreo con swell |
+| `glass_strings` | Cuerdas cristal | FMSynth sine, h 4.0 — textura cristalina para outro |
 
 **Defaults por músico:** Rhodes (M1), DX7 (M2), Marimba (M3).
 
 ### Fallback
 
 Si `timbres.yaml` no se puede cargar (abriste `index.html` con `file://`),
-IN M usa un fallback embebido con los 14 timbres completos (los 8 originales
-+ los 6 clásicos). La consola del navegador avisa.
+IN M usa un fallback embebido con los 18 timbres completos (los 8 originales
++ los 6 clásicos + las 4 cuerdas orquestales). La consola del navegador avisa.
 
 ---
 

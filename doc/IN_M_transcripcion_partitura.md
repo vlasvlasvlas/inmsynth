@@ -127,8 +127,8 @@ La partitura original se organiza en 4 sistemas de compases regulares:
   - C#5 (corchea, pulso 4.5, anacrusa): *«Cho-»*  
   *(Total compás: 1.5 + 2.0 + 0.5 = 4.0 pulsos)*
 - **Compás 13 (Acordes A en pulso 1 → B en pulso 3):**  
-  - C#5 (corchea, pulso 1.0): *«-clo y»* (0.5 pulsos)  
-  - C#5 (corchea, pulso 1.5): *«Len-»* (0.5 pulsos)  
+  - C#5 (corchea, pulso 1.0): *«-clo»* (0.5 pulsos)  
+  - C#5 (corchea, pulso 1.5): *«yLen-»* (0.5 pulsos — sinalefa de la conjunción con la sílaba inicial de "Lentejas", tal como figura ligada en la partitura original)  
   - D#5 (negra con acento `>`, pulso 2.0): *«-te-»* (1.0 pulso)  
   - B4 (negra con punto y tenuto, pulso 3.0, acorde B): *«-jas»* (1.5 pulsos, hasta pulso 4.5)  
   - E4 (corchea con plica descendente, pulso 4.5, anacrusa a c. 14): *«Ma-»* (0.5 pulsos)  
