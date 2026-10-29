@@ -3068,8 +3068,11 @@ document.getElementById('btnBeat').addEventListener('click', async () => {
     }).connect(masterReverb);
   }
 
+  // Beat afinado en D6: tónica de la obra (Re mayor domina los compases 1–9;
+  // la modulación a Mi mayor desde el compás 10 la cubren los pulsos
+  // internos de los modos Canción y Ensemble, que sí alternan D/E).
   beatLoop = new Tone.Loop(time => {
-    beatSynth.triggerAttackRelease('C6', '32n', time, 0.45);
+    beatSynth.triggerAttackRelease('D6', '32n', time, 0.45);
   }, '4n');
 
   beatLoop.start(0);
