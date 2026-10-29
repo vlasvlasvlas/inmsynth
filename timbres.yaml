@@ -35,7 +35,7 @@ timbres:
   - key: pluck
     label: Pluck
     type: Synth
-    volume: -9
+    volume: -10
     oscillator:
       type: triangle
     envelope:
@@ -61,7 +61,7 @@ timbres:
   - key: bell
     label: Campana
     type: FMSynth
-    volume: -14
+    volume: -13
     harmonicity: 3.01
     modulationIndex: 4.2
     oscillator:
@@ -82,7 +82,7 @@ timbres:
   - key: clarinet
     label: Clarinete
     type: Synth
-    volume: -10
+    volume: -11
     oscillator:
       type: triangle
     envelope:
@@ -94,7 +94,7 @@ timbres:
   - key: flute
     label: Flauta
     type: Synth
-    volume: -9
+    volume: -10
     oscillator:
       type: sine
     envelope:
@@ -106,7 +106,7 @@ timbres:
   - key: pulse
     label: Pulse
     type: Synth
-    volume: -12
+    volume: -13
     oscillator:
       type: pulse
       width: 0.32
@@ -133,7 +133,7 @@ timbres:
   - key: marimba
     label: Marimba
     type: FMSynth
-    volume: -10
+    volume: -11
     harmonicity: 4.0
     modulationIndex: 1.6
     oscillator:
@@ -177,7 +177,7 @@ timbres:
   - key: dx7
     label: DX7 EPiano
     type: FMSynth
-    volume: -9
+    volume: -11
     harmonicity: 2
     modulationIndex: 10
     oscillator:
@@ -198,7 +198,7 @@ timbres:
   - key: moog
     label: Moog Lead
     type: Synth
-    volume: -23
+    volume: -17
     oscillator:
       type: square
     envelope:
@@ -210,7 +210,7 @@ timbres:
   - key: juno
     label: Juno Pad
     type: Synth
-    volume: -21
+    volume: -17
     oscillator:
       type: fatsawtooth
       spread: 20
@@ -224,7 +224,7 @@ timbres:
   - key: tb303
     label: TB-303 Acid
     type: AMSynth
-    volume: -18
+    volume: -15
     harmonicity: 0.5
     oscillator:
       type: sawtooth
@@ -244,7 +244,7 @@ timbres:
   - key: arp
     label: ARP Strings
     type: FMSynth
-    volume: -20
+    volume: -16
     harmonicity: 3.5
     modulationIndex: 2.5
     oscillator:
@@ -271,7 +271,7 @@ timbres:
   - key: strings_ensemble
     label: Cuerdas (ensemble)
     type: Synth
-    volume: -14
+    volume: -15
     oscillator:
       type: fatsawtooth
       spread: 24
@@ -305,7 +305,7 @@ timbres:
   - key: violin_pad
     label: Violín (pad)
     type: FMSynth
-    volume: -16
+    volume: -14
     harmonicity: 2.5
     modulationIndex: 1.8
     oscillator:
@@ -326,7 +326,7 @@ timbres:
   - key: glass_strings
     label: Cuerdas cristal
     type: FMSynth
-    volume: -18
+    volume: -14
     harmonicity: 4.0
     modulationIndex: 0.8
     oscillator:
