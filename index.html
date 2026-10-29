@@ -2835,10 +2835,14 @@ function buildInterpPanel() {
     });
 
     document.getElementById(`btn-mute-${mid}`).addEventListener('click', () => {
-      const mutedNode = voiceMutes[mid];
-      if (!mutedNode) return;
-      mutedNode.mute = !mutedNode.mute;
-      document.getElementById(`btn-mute-${mid}`).classList.toggle('muted', mutedNode.mute);
+      const node = voiceMutes[mid];
+      if (!node) return;
+      const btn = document.getElementById(`btn-mute-${mid}`);
+      const willMute = !btn.classList.contains('muted');
+      // Rampa suave de 30 ms: evita el click que produce el salto brusco de
+      // ganancia (de 0 dB a -Infinity) al togglear la propiedad .mute directa.
+      node.volume.rampTo(willMute ? -60 : 0, 0.03);
+      btn.classList.toggle('muted', willMute);
     });
   });
 }
