@@ -284,6 +284,4 @@ Si Riley —ayudado por Reich en el pulso— demostró en 1964 que una partitura
 ### 9.6. Documentación interna del proyecto
 
 21. [`doc/IN_M_transcripcion_partitura.md`](./IN_M_transcripcion_partitura.md). Transcripción formal y rítmica compás a compás.
-22. [`doc/IN_M_analisis_v1.md`](./IN_M_analisis_v1.md). Análisis morfológico preliminar.
-23. [`doc/IN_M_analisis_v2.md`](./IN_M_analisis_v2.md). Deliberación del comité de expertos en HCI, composición y estudios culturales.
-24. [`timbres.yaml`](../timbres.yaml). Catálogo editable de los 18 timbres sintetizados.
+22. [`timbres.yaml`](../timbres.yaml). Catálogo editable de los 18 timbres sintetizados.

@@ -338,9 +338,7 @@ inmsynth/
 └── doc/
     ├── partitura.png                    # partitura original escaneada
     ├── IN_M_marco_teorico_y_metodologia.md # marco teórico, investigación cultural y metodología
-    ├── IN_M_transcripcion_partitura.md  # transcripción nota a nota
-    ├── IN_M_analisis_v1.md              # análisis musical v1
-    └── IN_M_analisis_v2.md              # análisis musical v2
+    └── IN_M_transcripcion_partitura.md  # transcripción nota a nota
 ```
 
 Sin build step, sin dependencias que instalar. Dependencias externas por CDN:
